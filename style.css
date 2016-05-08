@@ -21,8 +21,6 @@ a:hover {
      display: flex;
      flex-wrap: wrap;
      justify-content: center;
-     min-width: 100vw;
-     min-height: 100vh;
 }
 .dashboard .pane {
      width: 300px;
@@ -35,6 +33,7 @@ a:hover {
 }
 .dashboard .pane:hover {
      border: 10px lightgrey solid;
+     font-size: bold;
 }
 
 .dashboard .gloss {
@@ -54,6 +53,7 @@ a:hover {
 }
 
 .dashboard a {
+    width: 100%;
     font-size: 400%;
     color: white;
     text-decoration: none;
