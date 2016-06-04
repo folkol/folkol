@@ -53,7 +53,7 @@ a:hover, a:focus {
 
 .dashboard .pane:hover, .dashboard .pane:focus {
     border: 10px lightgrey solid;
-    font-weight: bold;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
 .dashboard .gloss {
