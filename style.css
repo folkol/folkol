@@ -30,7 +30,7 @@ a {
     text-decoration: none;
 }
 
-a:hover {
+a:hover, a:focus {
     color: white;
 }
 
@@ -51,7 +51,7 @@ a:hover {
     border: 10px gray solid;
 }
 
-.dashboard .pane:hover {
+.dashboard .pane:hover, .dashboard .pane:focus {
     border: 10px lightgrey solid;
     font-weight: bold;
 }
