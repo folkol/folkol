@@ -453,36 +453,13 @@ void main() {
     }
 
     function onWindowResize() {
-        var isMaxWidth = ((resizer.currentWidth === resizer.maxWidth) || (resizer.currentWidth === resizer.minWidth)),
-                isMaxHeight = ((resizer.currentHeight === resizer.maxHeight) || (resizer.currentHeight === resizer.minHeight));
-
-        resizer.isResizing = false;
-        resizer.maxWidth = window.innerWidth - 75;
-        resizer.maxHeight = window.innerHeight - 125;
-        if (isMaxWidth || (resizer.currentWidth > resizer.maxWidth)) {
-            resizer.currentWidth = resizer.maxWidth;
-        }
-        if (isMaxHeight || (resizer.currentHeight > resizer.maxHeight)) {
-            resizer.currentHeight = resizer.maxHeight;
-        }
-        if (resizer.currentWidth < resizer.minWidth) {
-            resizer.currentWidth = resizer.minWidth;
-        }
-        if (resizer.currentHeight < resizer.minHeight) {
-            resizer.currentHeight = resizer.minHeight;
-        }
-
-        canvas.width = window.innerWidth / quality;
-        canvas.height = window.innerHeight / quality;
-
-        canvas.style.width = window.innerWidth + 'px';
-        canvas.style.height = window.innerHeight + 'px';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
 
         parameters.screenWidth = canvas.width;
         parameters.screenHeight = canvas.height;
 
         computeSurfaceCorners();
-
         if (gl) {
             gl.viewport(0, 0, canvas.width, canvas.height);
             createRenderTargets();
