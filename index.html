@@ -1,16 +1,541 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
+    <title>folkol.com</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
     <script src="analytics.js"></script>
-  </head>
-  <body>
-    <img src="eyes.gif">
-    <div class="dashboard">
-      <div id="share" class="pane"><a href="http://share.folkol.com"><div class="gloss"><span>Share</span></div></a></div>
-      <div id="gallery" class="pane"><a href="http://gallery.folkol.com"><div class="gloss"><span>Gallery</span></div></a></div>
-    </div>
-  </body>
+</head>
+<script type="x-shader/x-fragment" id="fragment-shader">
+precision highp float;
+
+uniform float time;
+uniform vec2 resolution;
+
+#define TAU 5.28318530718
+
+float sinf(float x)
+{
+    x*=0.159155;
+    x-=floor(x);
+    float xx=x*x;
+    float y=-6.87897;
+    y=y*xx+33.7755;
+    y=y*xx-72.5257;
+    y=y*xx+80.5874;
+    y=y*xx-41.2408;
+    y=y*xx+6.28077;
+    return x*y;
+}
+
+float cosf(float x)
+{
+    return sinf(x+1.5708);
+}
+
+void main( void )
+{
+    float time = time * 0.05;
+    vec2 uv = gl_FragCoord.xy / resolution;
+    vec2 p = mod(uv*TAU, TAU)-250.0;
+
+    vec2 i = vec2(p);
+    float c = 1.0;
+    float inten = .005;
+    float t = time * (1.0 - 3.5);
+    i = p + vec2(cosf(t - i.x) + sinf(t + i.y), sinf(t - i.y) + cosf(t + i.x));
+    c += 1.0/length(vec2(p.x / (sinf(i.x+t)/inten),p.y / (cosf(i.y+t)/inten)));
+    t = time * (1.0 - (3.5 / 2.0));
+    i = p + vec2(cosf(t - i.x) + sinf(t + i.y), sinf(t - i.y) + cosf(t + i.x));
+    c += 1.0/length(vec2(p.x / (sinf(i.x+t)/inten),p.y / (cosf(i.y+t)/inten)));
+
+    c /= 2.0;
+    c = 1.0 - sqrt(c);
+
+    vec4 colour = vec4(c, c - 0.2, c + 0.1, 1.0);
+    colour = clamp(colour, 0.0, 1.0);
+
+    gl_FragColor = colour;
+}
+</script>
+<script id="fragmentShader" type="x-shader/x-fragment">
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform vec2 resolution;
+uniform sampler2D texture;
+
+void main() {
+    vec2 uv = gl_FragCoord.xy / resolution.xy;
+    gl_FragColor = texture2D( texture, uv );
+}
+</script>
+<script id="vertexShader" type="x-shader/x-vertex">
+attribute vec3 position;
+
+void main() {
+    gl_Position = vec4( position, 1.0 );
+}
+</script>
+<script id="surfaceVertexShader" type="x-shader/x-vertex">
+    attribute vec3 position;
+    attribute vec2 surfacePosAttrib;
+    varying vec2 surfacePosition;
+
+    void main() {
+        surfacePosition = surfacePosAttrib;
+        gl_Position = vec4( position, 1.0 );
+    }
+</script>
+<body onload="compile();">
+<script>
+    function getFragmentCode() {
+        return document.querySelector("#fragment-shader").innerHTML;
+    }
+    if (!window.requestAnimationFrame) {
+        window.requestAnimationFrame = (function () {
+            return window.webkitRequestAnimationFrame ||
+                    window.mozRequestAnimationFrame ||
+                    window.oRequestAnimationFrame ||
+                    window.msRequestAnimationFrame ||
+                    function (callback) {
+                        window.setTimeout(callback, 1000 / 60);
+                    };
+        })();
+    }
+
+    var quality = 1, quality_levels = [0.5, 1, 2, 4, 8];
+    var compileButton, fullscreenButton, compileTimer, errorLines = [];
+    var code, canvas, gl, buffer, currentProgram, vertexPosition, screenVertexPosition,
+            parameters = {startTime: Date.now(), time: 0, mouseX: 0.5, mouseY: 0.5, screenWidth: 0, screenHeight: 0},
+            surface = {
+                centerX: 0,
+                centerY: 0,
+                width: 1,
+                height: 1,
+                isPanning: false,
+                isZooming: false,
+                lastX: 0,
+                lastY: 0
+            },
+            frontTarget, backTarget, screenProgram, getWebGL, resizer = {}, compileOnChangeCode = true;
+
+    init();
+    if (gl) {
+        animate();
+    }
+
+    function init() {
+        if (!document.addEventListener) {
+            document.location = 'http://get.webgl.org/';
+            return;
+        }
+
+        canvas = document.createElement('canvas');
+        canvas.style.display = 'block';
+        document.body.appendChild(canvas);
+
+        var rightside = document.createElement('div');
+        rightside.style.cssFloat = 'right';
+
+        fullscreenButton = document.createElement('button');
+        fullscreenButton.textContent = 'fullscreen';
+        fullscreenButton.title = 'Press F11 to enter or leave fullscreen mode';
+        rightside.appendChild(fullscreenButton);
+
+        var button = document.createElement('a');
+        button.textContent = 'gallery';
+        button.href = '/';
+        rightside.appendChild(button);
+
+        var button = document.createElement('button');
+        button.textContent = 'hide code';
+
+        var select = document.createElement('select');
+
+        for (var i = 0; i < quality_levels.length; i++) {
+
+            var option = document.createElement('option');
+            option.textContent = quality_levels[i];
+            if (quality_levels[i] == quality) option.selected = true;
+            select.appendChild(option);
+
+        }
+
+        select.addEventListener('change', function (event) {
+
+            quality = quality_levels[event.target.selectedIndex];
+            onWindowResize();
+
+        }, false);
+
+
+        compileButton = document.createElement('button');
+        compileButton.textContent = 'compile';
+
+        // Initialise WebGL
+
+        try {
+            gl = canvas.getContext('experimental-webgl', {preserveDrawingBuffer: true});
+        } catch (error) {
+        }
+
+        if (gl) {
+            // enable dFdx, dFdy, fwidth
+            gl.getExtension('OES_standard_derivatives');
+
+            // Create vertex buffer (2 triangles)
+
+            buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0]), gl.STATIC_DRAW);
+
+            // Create surface buffer (coordinates at screen corners)
+
+            surface.buffer = gl.createBuffer();
+        }
+
+        onWindowResize();
+        window.addEventListener('resize', onWindowResize, false);
+        compileScreenProgram();
+    }
+
+    var hideUITimer;
+    var isUIHidden = false;
+
+    function startHideUITimer() {
+
+    }
+
+    function stopHideUI() {
+
+        if (isUIHidden) {
+
+            isUIHidden = false;
+            document.body.style.cursor = '';
+        }
+        startHideUITimer();
+    }
+
+
+    function computeSurfaceCorners() {
+
+        if (gl) {
+
+            surface.width = surface.height * parameters.screenWidth / parameters.screenHeight;
+
+            var halfWidth = surface.width * 0.5, halfHeight = surface.height * 0.5;
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, surface.buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                surface.centerX - halfWidth, surface.centerY - halfHeight,
+                surface.centerX + halfWidth, surface.centerY - halfHeight,
+                surface.centerX - halfWidth, surface.centerY + halfHeight,
+                surface.centerX + halfWidth, surface.centerY - halfHeight,
+                surface.centerX + halfWidth, surface.centerY + halfHeight,
+                surface.centerX - halfWidth, surface.centerY + halfHeight]), gl.STATIC_DRAW);
+
+        }
+
+    }
+
+    function resetSurface() {
+        surface.centerX = surface.centerY = 0;
+        surface.height = 1;
+        computeSurfaceCorners();
+    }
+
+    function compile() {
+        if (!gl) {
+            return;
+        }
+
+        var program = gl.createProgram();
+        var fragment = getFragmentCode();
+        var vertex = document.getElementById('surfaceVertexShader').textContent;
+
+        var vs = createShader(vertex, gl.VERTEX_SHADER);
+        var fs = createShader(fragment, gl.FRAGMENT_SHADER);
+
+        if (vs == null || fs == null) return null;
+
+        gl.attachShader(program, vs);
+        gl.attachShader(program, fs);
+
+        gl.deleteShader(vs);
+        gl.deleteShader(fs);
+
+        gl.linkProgram(program);
+
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+
+            var error = gl.getProgramInfoLog(program);
+
+            compileButton.title = error;
+            console.error(error);
+
+            console.error('VALIDATE_STATUS: ' + gl.getProgramParameter(program, gl.VALIDATE_STATUS), 'ERROR: ' + gl.getError());
+            compileButton.style.color = '#ff0000';
+            compileButton.textContent = 'compiled with errors';
+            return;
+        }
+
+        if (currentProgram) {
+            gl.deleteProgram(currentProgram);
+            setURL(fragment);
+        }
+
+        currentProgram = program;
+
+        compileButton.style.color = '#00ff00';
+        compileButton.textContent = 'compiled successfully';
+
+        // Cache uniforms
+
+        cacheUniformLocation(program, 'time');
+        cacheUniformLocation(program, 'mouse');
+        cacheUniformLocation(program, 'resolution');
+        cacheUniformLocation(program, 'backbuffer');
+        cacheUniformLocation(program, 'surfaceSize');
+
+        // Load program into GPU
+
+        gl.useProgram(currentProgram);
+
+        // Set up buffers
+
+        surface.positionAttribute = gl.getAttribLocation(currentProgram, "surfacePosAttrib");
+        gl.enableVertexAttribArray(surface.positionAttribute);
+
+        vertexPosition = gl.getAttribLocation(currentProgram, "position");
+        gl.enableVertexAttribArray(vertexPosition);
+
+    }
+
+    function compileScreenProgram() {
+        if (!gl) {
+            return;
+        }
+
+        var program = gl.createProgram();
+        var fragment = document.getElementById('fragmentShader').textContent;
+        var vertex = document.getElementById('vertexShader').textContent;
+
+        var vs = createShader(vertex, gl.VERTEX_SHADER);
+        var fs = createShader(fragment, gl.FRAGMENT_SHADER);
+
+        gl.attachShader(program, vs);
+        gl.attachShader(program, fs);
+
+        gl.deleteShader(vs);
+        gl.deleteShader(fs);
+
+        gl.linkProgram(program);
+
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            console.error('VALIDATE_STATUS: ' + gl.getProgramParameter(program, gl.VALIDATE_STATUS), 'ERROR: ' + gl.getError());
+            return;
+        }
+
+        screenProgram = program;
+
+        gl.useProgram(screenProgram);
+
+        cacheUniformLocation(program, 'resolution');
+        cacheUniformLocation(program, 'texture');
+
+        screenVertexPosition = gl.getAttribLocation(screenProgram, "position");
+        gl.enableVertexAttribArray(screenVertexPosition);
+
+    }
+
+    function cacheUniformLocation(program, label) {
+        if (program.uniformsCache === undefined) {
+            program.uniformsCache = {};
+        }
+        program.uniformsCache[label] = gl.getUniformLocation(program, label);
+    }
+
+    //
+
+    function createTarget(width, height) {
+
+        var target = {};
+
+        target.framebuffer = gl.createFramebuffer();
+        target.renderbuffer = gl.createRenderbuffer();
+        target.texture = gl.createTexture();
+
+        // set up framebuffer
+
+        gl.bindTexture(gl.TEXTURE_2D, target.texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, target.framebuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, target.texture, 0);
+
+        // set up renderbuffer
+
+        gl.bindRenderbuffer(gl.RENDERBUFFER, target.renderbuffer);
+
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, target.renderbuffer);
+
+        // clean up
+
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        return target;
+    }
+
+    function createRenderTargets() {
+        frontTarget = createTarget(parameters.screenWidth, parameters.screenHeight);
+        backTarget = createTarget(parameters.screenWidth, parameters.screenHeight);
+    }
+
+    function createShader(src, type) {
+        var shader = gl.createShader(type);
+        var line, lineNum, lineError, index = 0, indexEnd;
+
+        while (errorLines.length > 0) {
+            line = errorLines.pop();
+        }
+
+        gl.shaderSource(shader, src);
+        gl.compileShader(shader);
+
+        compileButton.title = '';
+
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+
+            var error = gl.getShaderInfoLog(shader);
+
+            // Remove trailing linefeed, for FireFox's benefit.
+            while ((error.length > 1) && (error.charCodeAt(error.length - 1) < 32)) {
+                error = error.substring(0, error.length - 1);
+            }
+
+            compileButton.title = error;
+            console.error(error);
+
+            compileButton.style.color = '#ff0000';
+            compileButton.textContent = 'compiled with errors';
+
+            while (index >= 0) {
+                index = error.indexOf("ERROR: 0:", index);
+                if (index < 0) {
+                    break;
+                }
+                index += 9;
+                indexEnd = error.indexOf(':', index);
+                if (indexEnd > index) {
+                    lineNum = parseInt(error.substring(index, indexEnd));
+                    if ((!isNaN(lineNum)) && (lineNum > 0)) {
+                        index = indexEnd + 1;
+                        indexEnd = error.indexOf("ERROR: 0:", index);
+                        lineError = htmlEncode((indexEnd > index) ? error.substring(index, indexEnd) : error.substring(index));
+                    }
+                }
+            }
+            return null;
+        }
+        return shader;
+    }
+
+    function onWindowResize() {
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+
+        parameters.screenWidth = canvas.width;
+        parameters.screenHeight = canvas.height;
+
+        computeSurfaceCorners();
+        if (gl) {
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            createRenderTargets();
+        }
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        render();
+    }
+
+    function render() {
+        if (!currentProgram)
+            return;
+
+        parameters.time = Date.now() - parameters.startTime;
+
+        // Set uniforms for custom shader
+        gl.useProgram(currentProgram);
+
+        gl.uniform1f(currentProgram.uniformsCache['time'], parameters.time / 1000);
+        gl.uniform2f(currentProgram.uniformsCache['mouse'], parameters.mouseX, parameters.mouseY);
+        gl.uniform2f(currentProgram.uniformsCache['resolution'], parameters.screenWidth, parameters.screenHeight);
+        gl.uniform1i(currentProgram.uniformsCache['backbuffer'], 0);
+        gl.uniform2f(currentProgram.uniformsCache['surfaceSize'], surface.width, surface.height);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, surface.buffer);
+        gl.vertexAttribPointer(surface.positionAttribute, 2, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.vertexAttribPointer(vertexPosition, 2, gl.FLOAT, false, 0, 0);
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, backTarget.texture);
+
+        // Render custom shader to front buffer
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, frontTarget.framebuffer);
+
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+        // Set uniforms for screen shader
+
+        gl.useProgram(screenProgram);
+
+        gl.uniform2f(screenProgram.uniformsCache['resolution'], parameters.screenWidth, parameters.screenHeight);
+        gl.uniform1i(screenProgram.uniformsCache['texture'], 1);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.vertexAttribPointer(screenVertexPosition, 2, gl.FLOAT, false, 0, 0);
+
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, frontTarget.texture);
+
+        // Render front buffer to screen
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+        // Swap buffers
+
+        var tmp = frontTarget;
+        frontTarget = backTarget;
+        backTarget = tmp;
+    }
+</script>
+<div class="dashboard">
+    <div id="share" class="pane"><a href="http://share.folkol.com">
+        <div class="gloss"><span>Share</span></div>
+    </a></div>
+    <div id="gallery" class="pane"><a href="http://gallery.folkol.com">
+        <div class="gloss"><span>Gallery</span></div>
+    </a></div>
+</div>
+</body>
 </html>
