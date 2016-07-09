@@ -22,10 +22,7 @@ var ShadyCanvas = (function () {
                 })();
             }
 
-            var fullscreenButton,
-                compileTimer,
-                errorLines = [],
-                code,
+            var errorLines = [],
                 canvas,
                 gl,
                 buffer,
@@ -52,9 +49,7 @@ var ShadyCanvas = (function () {
                 },
                 frontTarget,
                 backTarget,
-                screenProgram,
-                getWebGL,
-                compileOnChangeCode = true;
+                screenProgram;
 
             canvas = given_canvas;
             try {
@@ -111,21 +106,6 @@ var ShadyCanvas = (function () {
 
             if (gl) {
                 animate();
-            }
-
-            function computeSurfaceCorners() {
-                if (gl) {
-                    surface.width = surface.height * parameters.screenWidth / parameters.screenHeight;
-                    var halfWidth = surface.width * 0.5, halfHeight = surface.height * 0.5;
-                    gl.bindBuffer(gl.ARRAY_BUFFER, surface.buffer);
-                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-                        surface.centerX - halfWidth, surface.centerY - halfHeight,
-                        surface.centerX + halfWidth, surface.centerY - halfHeight,
-                        surface.centerX - halfWidth, surface.centerY + halfHeight,
-                        surface.centerX + halfWidth, surface.centerY - halfHeight,
-                        surface.centerX + halfWidth, surface.centerY + halfHeight,
-                        surface.centerX - halfWidth, surface.centerY + halfHeight]), gl.STATIC_DRAW);
-                }
             }
 
             function createTarget(width, height) {
@@ -250,52 +230,6 @@ var ShadyCanvas = (function () {
                 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
                 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
                 gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-                // Swap buffers
-//        var tmp = frontTarget;
-//        frontTarget = backTarget;
-//        backTarget = tmp;
-            }
-
-            function compile() {
-                if (!gl) {
-                    return;
-                }
-
-                var program2 = gl.createProgram();
-                var fragment2 = document.getElementById("fragment-shader").textContent;
-                var vertex2 = document.getElementById('surfaceVertexShader').textContent;
-
-                var vs2 = createShader(vertex2, gl.VERTEX_SHADER);
-                var fs2 = createShader(fragment2, gl.FRAGMENT_SHADER);
-
-                if (vs2 == null || fs2 == null) return null;
-
-                gl.attachShader(program2, vs2);
-                gl.attachShader(program2, fs2);
-
-                gl.deleteShader(vs2);
-                gl.deleteShader(fs2);
-
-                gl.linkProgram(program2);
-
-                if (!gl.getProgramParameter(program2, gl.LINK_STATUS)) {
-                    console.error(gl.getProgramInfoLog(program2));
-                    console.error('VALIDATE_STATUS: ' + gl.getProgramParameter(program2, gl.VALIDATE_STATUS), 'ERROR: ' + gl.getError());
-                    return;
-                }
-
-                if (currentProgram) {
-                    gl.deleteProgram(currentProgram);
-                    setURL(fragment2);
-                }
-
-                currentProgram = program2;
-                gl.useProgram(currentProgram);
-                surface.positionAttribute = gl.getAttribLocation(currentProgram, "surfacePosAttrib");
-                gl.enableVertexAttribArray(surface.positionAttribute);
-                vertexPosition = gl.getAttribLocation(currentProgram, "position");
-                gl.enableVertexAttribArray(vertexPosition);
             }
 
             var program2 = gl.createProgram();
