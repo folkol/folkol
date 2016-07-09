@@ -1,3 +1,12 @@
+/**
+ * http://glslsandbox.com/e#32050.0
+ * http://glslsandbox.com/e#31608.0
+ * http://glslsandbox.com/e#31154.0
+ * 
+ *
+ * @type {{init}}
+ */
+
 var ShadyCanvas = (function () {
     return {
         init: function (given_canvas) {
@@ -117,48 +126,6 @@ var ShadyCanvas = (function () {
                         surface.centerX + halfWidth, surface.centerY + halfHeight,
                         surface.centerX - halfWidth, surface.centerY + halfHeight]), gl.STATIC_DRAW);
                 }
-            }
-
-            function compile() {
-                if (!gl) {
-                    return;
-                }
-
-                var program = gl.createProgram();
-                var fragment = document.getElementById("fragment-shader").textContent;
-                var vertex = document.getElementById('surfaceVertexShader').textContent;
-
-                var vs = createShader(vertex, gl.VERTEX_SHADER);
-                var fs = createShader(fragment, gl.FRAGMENT_SHADER);
-
-                if (vs == null || fs == null) return null;
-
-                gl.attachShader(program, vs);
-                gl.attachShader(program, fs);
-
-                gl.deleteShader(vs);
-                gl.deleteShader(fs);
-
-                gl.linkProgram(program);
-
-                if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-                    var error = gl.getProgramInfoLog(program);
-                    console.error(error);
-                    console.error('VALIDATE_STATUS: ' + gl.getProgramParameter(program, gl.VALIDATE_STATUS), 'ERROR: ' + gl.getError());
-                    return;
-                }
-
-                if (currentProgram) {
-                    gl.deleteProgram(currentProgram);
-                    setURL(fragment);
-                }
-
-                currentProgram = program;
-                gl.useProgram(currentProgram);
-                surface.positionAttribute = gl.getAttribLocation(currentProgram, "surfacePosAttrib");
-                gl.enableVertexAttribArray(surface.positionAttribute);
-                vertexPosition = gl.getAttribLocation(currentProgram, "position");
-                gl.enableVertexAttribArray(vertexPosition);
             }
 
             function createTarget(width, height) {
@@ -290,7 +257,71 @@ var ShadyCanvas = (function () {
 //        backTarget = tmp;
             }
 
-            compile();
+            function compile() {
+                if (!gl) {
+                    return;
+                }
+
+                var program2 = gl.createProgram();
+                var fragment2 = document.getElementById("fragment-shader").textContent;
+                var vertex2 = document.getElementById('surfaceVertexShader').textContent;
+
+                var vs2 = createShader(vertex2, gl.VERTEX_SHADER);
+                var fs2 = createShader(fragment2, gl.FRAGMENT_SHADER);
+
+                if (vs2 == null || fs2 == null) return null;
+
+                gl.attachShader(program2, vs2);
+                gl.attachShader(program2, fs2);
+
+                gl.deleteShader(vs2);
+                gl.deleteShader(fs2);
+
+                gl.linkProgram(program2);
+
+                if (!gl.getProgramParameter(program2, gl.LINK_STATUS)) {
+                    console.error(gl.getProgramInfoLog(program2));
+                    console.error('VALIDATE_STATUS: ' + gl.getProgramParameter(program2, gl.VALIDATE_STATUS), 'ERROR: ' + gl.getError());
+                    return;
+                }
+
+                if (currentProgram) {
+                    gl.deleteProgram(currentProgram);
+                    setURL(fragment2);
+                }
+
+                currentProgram = program2;
+                gl.useProgram(currentProgram);
+                surface.positionAttribute = gl.getAttribLocation(currentProgram, "surfacePosAttrib");
+                gl.enableVertexAttribArray(surface.positionAttribute);
+                vertexPosition = gl.getAttribLocation(currentProgram, "position");
+                gl.enableVertexAttribArray(vertexPosition);
+            }
+
+            var program2 = gl.createProgram();
+            var fragment2 = document.getElementById("fragment-shader").textContent;
+            var vertex2 = document.getElementById('surfaceVertexShader').textContent;
+            var vs2 = createShader(vertex2, gl.VERTEX_SHADER);
+            var fs2 = createShader(fragment2, gl.FRAGMENT_SHADER);
+            gl.attachShader(program2, vs2);
+            gl.attachShader(program2, fs2);
+            gl.deleteShader(vs2);
+            gl.deleteShader(fs2);
+            gl.linkProgram(program2);
+            if (!gl.getProgramParameter(program2, gl.LINK_STATUS)) {
+                console.error(gl.getProgramInfoLog(program2));
+                console.error('VALIDATE_STATUS: ' + gl.getProgramParameter(program2, gl.VALIDATE_STATUS), 'ERROR: ' + gl.getError());
+            }
+            if (currentProgram) {
+                gl.deleteProgram(currentProgram);
+                setURL(fragment2);
+            }
+            currentProgram = program2;
+            gl.useProgram(currentProgram);
+            surface.positionAttribute = gl.getAttribLocation(currentProgram, "surfacePosAttrib");
+            gl.enableVertexAttribArray(surface.positionAttribute);
+            vertexPosition = gl.getAttribLocation(currentProgram, "position");
+            gl.enableVertexAttribArray(vertexPosition);
         }
     };
 }());
