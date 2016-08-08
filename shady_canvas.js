@@ -2,7 +2,6 @@
  * http://glslsandbox.com/e#32050.0
  * http://glslsandbox.com/e#31608.0
  * http://glslsandbox.com/e#31154.0
- * 
  *
  * @type {{init}}
  */
