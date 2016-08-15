@@ -112,3 +112,8 @@ a:hover, a:focus {
     background: url('gallery.png');
     background-size: cover;
 }
+
+#github {
+    background: url('github.png');
+    background-size: cover;
+}
