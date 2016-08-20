@@ -2,4 +2,4 @@
 
 ## Redeploy:
 
-`scp -r * folkol.com:/opt/wildfly/welcome-content/`
+scp -r * folkol.com:/var/www/html/
