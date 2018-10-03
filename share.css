@@ -1,0 +1,72 @@
+html, body {
+  height: 100%;
+  background-color: black;
+}
+.header {
+  padding: 10px;
+  font-size: x-large;
+  align-self: flex-start;
+  color: black;
+}
+.header a {
+  font-weight: bold;
+  color: gray;
+  text-decoration: none;
+}
+#droparea {
+  height: 60%;
+  margin: 5%;
+  border: dashed gray 10px;
+  color: gray;
+  border-radius: 55px;
+}
+#droparea.hover {
+  height: 60%;
+  margin: 5%;
+  border: dashed white 10px;
+  color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+#droparea.hover:before, #droparea.hover:after {
+    position: absolute;
+    content: '';
+    background: red;
+    display: block;
+    width: 100%;
+    height: 30px;
+    -webkit-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+}
+
+#droparea.hover:after {
+    -webkit-transform: rotate(45deg);  
+    transform: rotate(45deg);
+}
+
+#droparea p {
+  text-align: center;
+  font-size: 50px;
+}
+#files {
+  text-align: center;
+  margin-top: 50px;
+}
+#files a {
+  color: white;
+  border: solid 2px white;
+  background-color: #555;
+  margin: 5px;
+  padding-left: 20px;
+  text-decoration: none;
+  line-height: 40px;
+  display: inline-block;
+  border-radius: 5px;
+  padding-right: 20px;
+}

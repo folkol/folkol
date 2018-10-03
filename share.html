@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset=utf-8>
+  <title>Folkol share hack</title>
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+  <script type="text/javascript" src="jquery-1.11.1.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="share.css">
+</head>
+<body>
+  <div class="header"><a href="http://folkol.com">&lt; folkol.com</a></div>
+  <div id="droparea">
+
+    <p>
+      Broken :(<br><br>
+      <img src=wip.gif><br>
+    </p>
+  </div>
+  <div id="files"></div>
+  <script>
+    window.ondragover = function (e) {
+        e.preventDefault();
+        $("#droparea").addClass("hover");
+    };
+    window.ondragleave = function (e) {
+        e.preventDefault();
+        $("#droparea").removeClass("hover");
+    };
+    window.ondrop = function (e) {
+        e.preventDefault();
+        $("#droparea").removeClass("hover");
+    };
+  </script>
+</body>
+</html>

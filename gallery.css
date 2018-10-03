@@ -1,0 +1,61 @@
+﻿html {
+    background: url('background.jpg');
+}
+
+body {
+    background-color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+}
+
+.gallery {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    justify-content: space-between;
+    align-content: center;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.page {
+    flex: 1;
+    margin-top: 10vh;
+    margin-bottom: 20vh;
+    margin-left: 10vw;
+    margin-right: 10vw;
+}
+
+.frame {
+    padding: 10px;
+    box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.75);
+    border: 1px solid black;
+    background-color: white;
+}
+
+img {
+    border: 1px solid black;
+    vertical-align: top;
+    max-width: 70vw;
+    max-height: 70vh;
+}
+
+.header {
+    padding: 10px;
+    font-size: x-large;
+    align-self: flex-start;
+    color: white;
+    color: white;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+
+    .header a {
+        font-weight: bold;
+        color: white;
+        text-decoration: none;
+    }
