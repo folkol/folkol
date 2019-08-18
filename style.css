@@ -104,17 +104,17 @@ a:hover, a:focus {
 }
 
 #share {
-    background: url('share.png');
+    background: url('share.jpg');
     background-size: cover;
 }
 
 #gallery {
-    background: url('gallery.png');
+    background: url('gallery.jpg');
     background-size: cover;
 }
 
 #github {
-    background: url('github.png');
+    background: url('github.jpg');
     background-size: cover;
 }
 
