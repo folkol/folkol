@@ -117,3 +117,8 @@ a:hover, a:focus {
     background: url('github.png');
     background-size: cover;
 }
+
+#seasons {
+    background: url('seasons.png');
+    background-size: cover;
+}
