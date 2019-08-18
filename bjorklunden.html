@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<script type="text/javascript">
+		
+	</script>
+	<style>
+		img {
+			width: 100%;
+		}
+		.slidecontainer {
+  width: 100%; /* Width of the outside container */
+}
+
+/* The slider itself */
+.slider {
+  -webkit-appearance: none;  /* Override default CSS styles */
+  appearance: none;
+  width: 100%; /* Full-width */
+  height: 25px; /* Specified height */
+  background: #d3d3d3; /* Grey background */
+  outline: none; /* Remove outline */
+  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+  transition: opacity .2s;
+}
+
+/* Mouse-over effects */
+.slider:hover {
+  opacity: 1; /* Fully shown on mouse-over */
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */ 
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  width: 25px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: #4CAF50; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+
+.slider::-moz-range-thumb {
+  width: 25px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: #4CAF50; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+	</style>
+</head>
+<body>
+	<img id=gallery src=bjorklunden-1.jpg.png>
+	<div class="slidecontainer">
+	  <input type="range" min="1" max="20" value="1" class="slider" id="slider">
+	</div>
+</body>
+<script type="text/javascript">
+	var slider = document.getElementById("slider");
+	var output = document.getElementById("gallery");
+	output.innerHTML = slider.value; // Display the default slider value
+
+	var images = [
+		"bjorklunden-1.jpg.png",
+		"bjorklunden-2.jpg.png",
+		"bjorklunden-3.jpg.png",
+		"bjorklunden-4.jpg.png",
+		"bjorklunden-5.jpg.png",
+		"bjorklunden-6.jpg.png",
+		"bjorklunden-7.jpg.png",
+		"bjorklunden-8.jpg.png",
+		"bjorklunden-9.jpg.png",
+		"bjorklunden-10.jpg.png",
+		"bjorklunden-11.jpg.png",
+		"bjorklunden-12.jpg.png",
+		"bjorklunden-13.jpg.png",
+		"bjorklunden-14.jpg.png",
+		"bjorklunden-15.jpg.png",
+		"bjorklunden-16.jpg.png",
+		"bjorklunden-17.jpg.png",
+		"bjorklunden-18.jpg.png",
+		"bjorklunden-19.jpg.png",
+		"bjorklunden-20.jpg.png",
+		"bjorklunden-21.jpg.png",
+		"bjorklunden-22.jpg.png",
+		"bjorklunden-23.jpg.png",
+	]
+
+	// Update the current slider value (each time you drag the slider handle)
+	slider.oninput = function() {
+	  	output.src = images[this.value - 1];
+	}
+</script>
+</html>
