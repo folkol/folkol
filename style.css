@@ -103,6 +103,10 @@ a:hover, a:focus {
     text-decoration: none;
 }
 
+.slidecontainer input {
+    margin: 0;
+}
+
 #share {
     background: url('share.jpg');
     background-size: cover;
