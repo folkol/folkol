@@ -127,11 +127,12 @@
       animation = true;
       interval = setInterval(() => {
         console.log(slider.value);
-        slider.value = parseInt(slider.value) + 1;
-        if(slider.value > parseInt(slider.max)) {
-          slider.value = 0;
+        let next = parseInt(slider.value) + 1;
+        if(next > parseInt(slider.max)) {
+          next = 1;
         }
-        output.src = images[slider.value];
+        slider.value = next;
+        output.src = images[slider.value - 1];
       }, 500);
     }
     else {
