@@ -126,7 +126,6 @@
     if(!animation) {
       animation = true;
       interval = setInterval(() => {
-        console.log(slider.value);
         let next = parseInt(slider.value) + 1;
         if(next > parseInt(slider.max)) {
           next = 1;
