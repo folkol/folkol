@@ -128,8 +128,7 @@
       interval = setInterval(() => {
         console.log(slider.value);
         slider.value = parseInt(slider.value) + 1;
-        console.log(slider.value, slider.max);
-        if(slider.value >= parseInt(slider.max)) {
+        if(slider.value > parseInt(slider.max)) {
           slider.value = 0;
         }
         output.src = images[slider.value];
