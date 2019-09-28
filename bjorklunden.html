@@ -65,9 +65,9 @@
 </head>
 <body>
 	<div class=content>
-		<img id=gallery src=bjorklunden-1.jpg>
+		<img id=gallery src=bjorklunden-1-31330.jpg>
 		<div class="slidecontainer">
-		  <input type="range" min="1" max="23" value="1" class="slider" id="slider">
+		  <input type="range" min="1" max="29" value="1" class="slider" id="slider">
 		</div>
 	</div>
 </body>
@@ -77,34 +77,67 @@
 	output.innerHTML = slider.value; // Display the default slider value
 
 	var images = [
-		"bjorklunden-1.jpg",
-		"bjorklunden-2.jpg",
-		"bjorklunden-3.jpg",
-		"bjorklunden-4.jpg",
-		"bjorklunden-5.jpg",
-		"bjorklunden-6.jpg",
-		"bjorklunden-7.jpg",
-		"bjorklunden-8.jpg",
-		"bjorklunden-9.jpg",
-		"bjorklunden-10.jpg",
-		"bjorklunden-11.jpg",
-		"bjorklunden-12.jpg",
-		"bjorklunden-13.jpg",
-		"bjorklunden-14.jpg",
-		"bjorklunden-15.jpg",
-		"bjorklunden-16.jpg",
-		"bjorklunden-17.jpg",
-		"bjorklunden-18.jpg",
-		"bjorklunden-19.jpg",
-		"bjorklunden-20.jpg",
-		"bjorklunden-21.jpg",
-		"bjorklunden-22.jpg",
-		"bjorklunden-23.jpg",
+        "bjorklunden-1-31330.jpg",
+        "bjorklunden-2-18585.jpg",
+        "bjorklunden-3-28712.jpg",
+        "bjorklunden-4-29990.jpg",
+        "bjorklunden-5-5889.jpg",
+        "bjorklunden-6-22721.jpg",
+        "bjorklunden-7-1263.jpg",
+        "bjorklunden-8-5052.jpg",
+        "bjorklunden-9-12479.jpg",
+        "bjorklunden-10-28347.jpg",
+        "bjorklunden-11-26265.jpg",
+        "bjorklunden-12-30452.jpg",
+        "bjorklunden-13-10217.jpg",
+        "bjorklunden-14-17244.jpg",
+        "bjorklunden-15-3328.jpg",
+        "bjorklunden-16-5354.jpg",
+        "bjorklunden-17-7895.jpg",
+        "bjorklunden-18-28504.jpg",
+        "bjorklunden-19-4340.jpg",
+        "bjorklunden-20-13529.jpg",
+        "bjorklunden-21-19330.jpg",
+        "bjorklunden-22-30784.jpg",
+        "bjorklunden-23-13670.jpg",
+        "bjorklunden-24-19411.jpg",
+        "bjorklunden-25-15917.jpg",
+        "bjorklunden-26-9558.jpg",
+        "bjorklunden-27-15325.jpg",
+        "bjorklunden-28-17880.jpg",
+        "bjorklunden-29-9914.jpg",
 	]
+
+  var animation = false;
+  var interval = 0;
 
 	// Update the current slider value (each time you drag the slider handle)
 	slider.oninput = function() {
-	  	output.src = images[this.value - 1];
+    clearInterval(interval);
+  	output.src = images[this.value - 1];
+    animation = false;
 	}
+
+  // Prefetch the images for smoother scrolling
+  images.forEach(image => { new Image().src = image; });
+
+  output.addEventListener('click', e => {
+    clearInterval(interval);
+    if(!animation) {
+      animation = true;
+      interval = setInterval(() => {
+        console.log(slider.value);
+        slider.value = parseInt(slider.value) + 1;
+        console.log(slider.value, slider.max);
+        if(slider.value >= parseInt(slider.max)) {
+          slider.value = 0;
+        }
+        output.src = images[slider.value];
+      }, 500);
+    }
+    else {
+      animation = false;
+    }
+  });
 </script>
 </html>
