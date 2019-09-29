@@ -118,10 +118,7 @@
     animation = false;
 	}
 
-  // Prefetch the images for smoother scrolling
-  images.forEach(image => { new Image().src = image; });
-
-  output.addEventListener('click', e => {
+  function toggleAnimation() {
     clearInterval(interval);
     if(!animation) {
       animation = true;
@@ -137,6 +134,12 @@
     else {
       animation = false;
     }
-  });
+  }
+
+  // Prefetch the images for smoother scrolling
+  images.forEach(image => { new Image().src = image; });
+
+  output.addEventListener('click', toggleAnimation);
+  toggleAnimation();
 </script>
 </html>
