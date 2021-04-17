@@ -1,0 +1,19 @@
+https://docs.aws.amazon.com/AmazonS3/latest/dev/website-hosting-custom-domain-walkthrough.html#root-domain-walkthrough-configure-redirect
+
+How it works:
+
+folkol.com registered with loopia
+
+DNS lookup
+. knows about com
+.com. knows about folkol.com.
+ns @ folkol.com redirects to route53
+ns @ route53 redirects to cloudfront
+cloudfront maps blog.folkol.com to folkol.s3.bucket/blog
+
+deploy:
+build blog/src -> blog/dist
+upload blog/dist to folkol.s3.bucket/blog
+
+How aws is configured:
+

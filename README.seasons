@@ -1,18 +1,18 @@
 Lightroom:
 Select all images
 Export to Björklunden
-Rename .jpg to -1.jpg
+#Rename .jpg to -1.jpg ?
+#resize to fit 800x600
+#$ for i in {1..9}; do mv bjorklunden-$i.jpg bjorklunden-0$i.jpg; done
 Photoshop:
-New image, landscape
 File -> Scripts -> Load files into Stack
 	- Attempt to align source images?
 Select all layers
-Auto-align layers -> According to content
-Crop to something that contains all
-	View -> Show -> Layer edges
-	Select drop inside all of them (use guides if needed...)
+	View -> Show -> Layer edges -> Crop
 Select all layers -> Export layers
 	Select all, Type: JPG, to ~/code/folkol
+	Rename to something with nonce
+    $ NONCE=$RANDOM; for i in {0000..0056}; do NAME=$(ls bjorklunden-1_$i*); N=${NAME//.jpg.jpg}; M=${N##*$i_bjorklunden-}; mv $NAME bjorklunden-$NONCE-$M.jpg; done
 
 #convert -resize 640x480 -delay 50 *.png bjorklunden.gif
 	#- convert -resize 640x480 -delay 50 bjorklunden-1.jpg.png bjorklunden-2.jpg.png bjorklunden-3.jpg.png bjorklunden-4.jpg.png bjorklunden-5.jpg.png bjorklunden-6.jpg.png bjorklunden-7.jpg.png bjorklunden-8.jpg.png bjorklunden-9.jpg.png bjorklunden-10.jpg.png bjorklunden-11.jpg.png bjorklunden-12.jpg.png bjorklunden-13.jpg.png bjorklunden-14.jpg.png bjorklunden-15.jpg.png bjorklunden-16.jpg.png bjorklunden-17.jpg.png bjorklunden-18.jpg.png bjorklunden-19.jpg.png bjorklunden-20.jpg.png bjorklunden-21.jpg.png bjorklunden-22.jpg.png bjorklunden-23.jpg.png bjorklunden.gif

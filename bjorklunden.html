@@ -65,9 +65,9 @@
 </head>
 <body>
 	<div class=content>
-		<img id=gallery src=bjorklunden-01-14097.jpg>
+		<img id=gallery src=bjorklunden_17642_000.jpg>
 		<div class="slidecontainer">
-		  <input type="range" min="1" max="33" value="1" class="slider" id="slider">
+		  <input type="range" min="0" max="108" value="0" class="slider" id="slider">
 		</div>
 	</div>
 </body>
@@ -77,50 +77,126 @@
 	output.innerHTML = slider.value; // Display the default slider value
 
 	var images = [
-    "bjorklunden-01-14097.jpg",
-    "bjorklunden-02-14097.jpg",
-    "bjorklunden-03-14097.jpg",
-    "bjorklunden-04-14097.jpg",
-    "bjorklunden-05-14097.jpg",
-    "bjorklunden-06-14097.jpg",
-    "bjorklunden-07-14097.jpg",
-    "bjorklunden-08-14097.jpg",
-    "bjorklunden-09-14097.jpg",
-    "bjorklunden-10-14097.jpg",
-    "bjorklunden-11-14097.jpg",
-    "bjorklunden-12-14097.jpg",
-    "bjorklunden-13-14097.jpg",
-    "bjorklunden-14-14097.jpg",
-    "bjorklunden-15-14097.jpg",
-    "bjorklunden-16-14097.jpg",
-    "bjorklunden-17-14097.jpg",
-    "bjorklunden-18-14097.jpg",
-    "bjorklunden-19-14097.jpg",
-    "bjorklunden-20-14097.jpg",
-    "bjorklunden-21-14097.jpg",
-    "bjorklunden-22-14097.jpg",
-    "bjorklunden-23-14097.jpg",
-    "bjorklunden-24-14097.jpg",
-    "bjorklunden-25-14097.jpg",
-    "bjorklunden-26-14097.jpg",
-    "bjorklunden-27-14097.jpg",
-    "bjorklunden-28-14097.jpg",
-    "bjorklunden-29-14097.jpg",
-    "bjorklunden-30-14097.jpg",
-    "bjorklunden-31-14097.jpg",
-    "bjorklunden-32-14097.jpg",
-    "bjorklunden-33-14097.jpg",
+		"bjorklunden_17642_000.jpg",
+		"bjorklunden_17642_001.jpg",
+		"bjorklunden_17642_002.jpg",
+		"bjorklunden_17642_003.jpg",
+		"bjorklunden_17642_004.jpg",
+		"bjorklunden_17642_005.jpg",
+		"bjorklunden_17642_006.jpg",
+		"bjorklunden_17642_007.jpg",
+		"bjorklunden_17642_008.jpg",
+		"bjorklunden_17642_009.jpg",
+		"bjorklunden_17642_010.jpg",
+		"bjorklunden_17642_011.jpg",
+		"bjorklunden_17642_012.jpg",
+		"bjorklunden_17642_013.jpg",
+		"bjorklunden_17642_014.jpg",
+		"bjorklunden_17642_015.jpg",
+		"bjorklunden_17642_016.jpg",
+		"bjorklunden_17642_017.jpg",
+		"bjorklunden_17642_018.jpg",
+		"bjorklunden_17642_019.jpg",
+		"bjorklunden_17642_020.jpg",
+		"bjorklunden_17642_021.jpg",
+		"bjorklunden_17642_022.jpg",
+		"bjorklunden_17642_023.jpg",
+		"bjorklunden_17642_024.jpg",
+		"bjorklunden_17642_025.jpg",
+		"bjorklunden_17642_026.jpg",
+		"bjorklunden_17642_027.jpg",
+		"bjorklunden_17642_028.jpg",
+		"bjorklunden_17642_029.jpg",
+		"bjorklunden_17642_030.jpg",
+		"bjorklunden_17642_031.jpg",
+		"bjorklunden_17642_032.jpg",
+		"bjorklunden_17642_033.jpg",
+		"bjorklunden_17642_034.jpg",
+		"bjorklunden_17642_035.jpg",
+		"bjorklunden_17642_036.jpg",
+		"bjorklunden_17642_037.jpg",
+		"bjorklunden_17642_038.jpg",
+		"bjorklunden_17642_039.jpg",
+		"bjorklunden_17642_040.jpg",
+		"bjorklunden_17642_041.jpg",
+		"bjorklunden_17642_042.jpg",
+		"bjorklunden_17642_043.jpg",
+		"bjorklunden_17642_044.jpg",
+		"bjorklunden_17642_045.jpg",
+		"bjorklunden_17642_046.jpg",
+		"bjorklunden_17642_047.jpg",
+		"bjorklunden_17642_048.jpg",
+		"bjorklunden_17642_049.jpg",
+		"bjorklunden_17642_050.jpg",
+		"bjorklunden_17642_051.jpg",
+		"bjorklunden_17642_052.jpg",
+		"bjorklunden_17642_053.jpg",
+		"bjorklunden_17642_054.jpg",
+		"bjorklunden_17642_055.jpg",
+		"bjorklunden_17642_056.jpg",
+		"bjorklunden_17642_057.jpg",
+		"bjorklunden_17642_058.jpg",
+		"bjorklunden_17642_059.jpg",
+		"bjorklunden_17642_060.jpg",
+		"bjorklunden_17642_061.jpg",
+		"bjorklunden_17642_062.jpg",
+		"bjorklunden_17642_063.jpg",
+		"bjorklunden_17642_064.jpg",
+		"bjorklunden_17642_065.jpg",
+		"bjorklunden_17642_066.jpg",
+		"bjorklunden_17642_067.jpg",
+		"bjorklunden_17642_068.jpg",
+		"bjorklunden_17642_069.jpg",
+		"bjorklunden_17642_070.jpg",
+		"bjorklunden_17642_071.jpg",
+		"bjorklunden_17642_072.jpg",
+		"bjorklunden_17642_073.jpg",
+		"bjorklunden_17642_074.jpg",
+		"bjorklunden_17642_075.jpg",
+		"bjorklunden_17642_076.jpg",
+		"bjorklunden_17642_077.jpg",
+		"bjorklunden_17642_078.jpg",
+		"bjorklunden_17642_079.jpg",
+		"bjorklunden_17642_080.jpg",
+		"bjorklunden_17642_081.jpg",
+		"bjorklunden_17642_082.jpg",
+		"bjorklunden_17642_083.jpg",
+		"bjorklunden_17642_084.jpg",
+		"bjorklunden_17642_085.jpg",
+		"bjorklunden_17642_086.jpg",
+		"bjorklunden_17642_087.jpg",
+		"bjorklunden_17642_088.jpg",
+		"bjorklunden_17642_089.jpg",
+		"bjorklunden_17642_090.jpg",
+		"bjorklunden_17642_091.jpg",
+		"bjorklunden_17642_092.jpg",
+		"bjorklunden_17642_093.jpg",
+		"bjorklunden_17642_094.jpg",
+		"bjorklunden_17642_095.jpg",
+		"bjorklunden_17642_096.jpg",
+		"bjorklunden_17642_097.jpg",
+		"bjorklunden_17642_098.jpg",
+		"bjorklunden_17642_099.jpg",
+		"bjorklunden_17642_100.jpg",
+		"bjorklunden_17642_101.jpg",
+		"bjorklunden_17642_102.jpg",
+		"bjorklunden_17642_103.jpg",
+		"bjorklunden_17642_104.jpg",
+		"bjorklunden_17642_105.jpg",
+		"bjorklunden_17642_106.jpg",
+		"bjorklunden_17642_107.jpg",
+		"bjorklunden_17642_108.jpg",
 	]
 
   var animation = false;
   var interval = 0;
 
-	// Update the current slider value (each time you drag the slider handle)
-	slider.oninput = function() {
-    clearInterval(interval);
-  	output.src = images[this.value - 1];
-    animation = false;
-	}
+  // Update the current slider value (each time you drag the slider handle)
+  slider.oninput = function() {
+      clearInterval(interval);
+      output.src = images[this.value];
+      animation = false;
+  };
 
   function toggleAnimation() {
     clearInterval(interval);
@@ -141,9 +217,9 @@
   }
 
   // Prefetch the images for smoother scrolling
-  images.forEach(image => { new Image().src = image; });
+  images.forEach(image => new Image().src = image);
 
   output.addEventListener('click', toggleAnimation);
-  toggleAnimation();
+  //toggleAnimation();
 </script>
 </html>
