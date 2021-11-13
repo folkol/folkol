@@ -7,9 +7,14 @@
 		
 	</script>
 	<style>
+  html {
+   height: 100%;
+  }
+
   body {
    text-align: center;
    background-color: rgb(35, 35, 35);
+   height: 100%;
  }
 
  img {
@@ -25,10 +30,10 @@
   -webkit-appearance: none;  /* Override default CSS styles */
   appearance: none;
   width: 100%; /* Full-width */
-  height: 25px; /* Specified height */
+  height: 15px; /* Specified height */
   background: #d3d3d3; /* Grey background */
   outline: none; /* Remove outline */
-  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+  opacity: 0.3; /* Set transparency (for mouse-over effects on hover) */
   -webkit-transition: .2s; /* 0.2 seconds transition on hover */
   transition: opacity .2s;
   margin: 0;
@@ -44,7 +49,7 @@
   -webkit-appearance: none; /* Override default look */
   appearance: none;
   width: 25px; /* Set a specific slider handle width */
-  height: 25px; /* Slider handle height */
+  height: 15px; /* Slider handle height */
   background: #4CAF50; /* Green background */
   cursor: pointer; /* Cursor on hover */
 }
@@ -57,7 +62,11 @@
 }
 
 .content {
- display: inline-block;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: space-around;
+ min-height: 75%;
 }
 
 #gallery {
@@ -70,19 +79,21 @@
   left: 0;
 }
 #gallery > img.fading {
-  -webkit-transition: opacity 0.5s ease-in-out;
-  -moz-transition: opacity 0.5s ease-in-out;
-  -o-transition: opacity 0.5s ease-in-out;
-  transition: opacity 0.5s ease-in-out;
+  -webkit-transition: opacity 0.3s ease-in-out;
+  -moz-transition: opacity 0.3s ease-in-out;
+  -o-transition: opacity 0.3s ease-in-out;
+  transition: opacity 0.3s ease-in-out;
 }
 
 </style>
 </head>
 <body>
 	<div class=content>
+        <div>
 		<div id=gallery></div>
 		<div class="slidecontainer">
-      <input type="range" min="1" max="51" value="0" class="slider" id="slider">
+        <input type="range" min="1" max="51" value="0" class="slider" id="slider">
+      <div>
     </div>
   </div>
 </body>
@@ -91,58 +102,58 @@
 	var output = document.getElementById("gallery");
 
 	var imageNames = [
-  "bjorklunden-29129-1.jpg",
-  "bjorklunden-29129-2.jpg",
-  "bjorklunden-29129-3.jpg",
-  "bjorklunden-29129-4.jpg",
-  "bjorklunden-29129-5.jpg",
-  "bjorklunden-29129-6.jpg",
-  "bjorklunden-29129-7.jpg",
-  "bjorklunden-29129-8.jpg",
-  "bjorklunden-29129-9.jpg",
-  "bjorklunden-29129-10.jpg",
-  "bjorklunden-29129-11.jpg",
-  "bjorklunden-29129-12.jpg",
-  "bjorklunden-29129-13.jpg",
-  "bjorklunden-29129-14.jpg",
-  "bjorklunden-29129-15.jpg",
-  "bjorklunden-29129-16.jpg",
-  "bjorklunden-29129-17.jpg",
-  "bjorklunden-29129-18.jpg",
-  "bjorklunden-29129-19.jpg",
-  "bjorklunden-29129-20.jpg",
-  "bjorklunden-29129-21.jpg",
-  "bjorklunden-29129-22.jpg",
-  "bjorklunden-29129-23.jpg",
-  "bjorklunden-29129-24.jpg",
-  "bjorklunden-29129-25.jpg",
-  "bjorklunden-29129-26.jpg",
-  "bjorklunden-29129-27.jpg",
-  "bjorklunden-29129-28.jpg",
-  "bjorklunden-29129-29.jpg",
-  "bjorklunden-29129-30.jpg",
-  "bjorklunden-29129-31.jpg",
-  "bjorklunden-29129-32.jpg",
-  "bjorklunden-29129-33.jpg",
-  "bjorklunden-29129-34.jpg",
-  "bjorklunden-29129-35.jpg",
-  "bjorklunden-29129-36.jpg",
-  "bjorklunden-29129-37.jpg",
-  "bjorklunden-29129-38.jpg",
-  "bjorklunden-29129-39.jpg",
-  "bjorklunden-29129-40.jpg",
-  "bjorklunden-29129-41.jpg",
-  "bjorklunden-29129-42.jpg",
-  "bjorklunden-29129-43.jpg",
-  "bjorklunden-29129-44.jpg",
-  "bjorklunden-29129-45.jpg",
-  "bjorklunden-29129-46.jpg",
-  "bjorklunden-29129-47.jpg",
-  "bjorklunden-29129-48.jpg",
-  "bjorklunden-29129-49.jpg",
-  "bjorklunden-29129-50.jpg",
-  "bjorklunden-29129-51.jpg",
-  "bjorklunden-29129-52.jpg",
+  "bjorklunden-4154-01.jpg",
+  "bjorklunden-4154-02.jpg",
+  "bjorklunden-4154-03.jpg",
+  "bjorklunden-4154-04.jpg",
+  "bjorklunden-4154-05.jpg",
+  "bjorklunden-4154-06.jpg",
+  "bjorklunden-4154-07.jpg",
+  "bjorklunden-4154-08.jpg",
+  "bjorklunden-4154-09.jpg",
+  "bjorklunden-4154-10.jpg",
+  "bjorklunden-4154-11.jpg",
+  "bjorklunden-4154-12.jpg",
+  "bjorklunden-4154-13.jpg",
+  "bjorklunden-4154-14.jpg",
+  "bjorklunden-4154-15.jpg",
+  "bjorklunden-4154-16.jpg",
+  "bjorklunden-4154-17.jpg",
+  "bjorklunden-4154-18.jpg",
+  "bjorklunden-4154-19.jpg",
+  "bjorklunden-4154-20.jpg",
+  "bjorklunden-4154-21.jpg",
+  "bjorklunden-4154-22.jpg",
+  "bjorklunden-4154-23.jpg",
+  "bjorklunden-4154-24.jpg",
+  "bjorklunden-4154-25.jpg",
+  "bjorklunden-4154-26.jpg",
+  "bjorklunden-4154-27.jpg",
+  "bjorklunden-4154-28.jpg",
+  "bjorklunden-4154-29.jpg",
+  "bjorklunden-4154-30.jpg",
+  "bjorklunden-4154-31.jpg",
+  "bjorklunden-4154-32.jpg",
+  "bjorklunden-4154-33.jpg",
+  "bjorklunden-4154-34.jpg",
+  "bjorklunden-4154-35.jpg",
+  "bjorklunden-4154-36.jpg",
+  "bjorklunden-4154-37.jpg",
+  "bjorklunden-4154-38.jpg",
+  "bjorklunden-4154-39.jpg",
+  "bjorklunden-4154-40.jpg",
+  "bjorklunden-4154-41.jpg",
+  "bjorklunden-4154-42.jpg",
+  "bjorklunden-4154-43.jpg",
+  "bjorklunden-4154-44.jpg",
+  "bjorklunden-4154-45.jpg",
+  "bjorklunden-4154-46.jpg",
+  "bjorklunden-4154-47.jpg",
+  "bjorklunden-4154-48.jpg",
+  "bjorklunden-4154-49.jpg",
+  "bjorklunden-4154-50.jpg",
+  "bjorklunden-4154-51.jpg",
+  "bjorklunden-4154-52.jpg",
   ];
 
   var animation = false;
@@ -188,7 +199,7 @@
             images[next - 1].style.opacity = 1;
             slider.value = next;
           }
-        }, 250);
+        }, 1000/1);
       }
       else {
         animation = false;
