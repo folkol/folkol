@@ -7,6 +7,11 @@
 		
 	</script>
 	<style>
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
   html {
    height: 100%;
   }
@@ -18,7 +23,10 @@
  }
 
  img {
-   width: 100%;
+   display: block;
+   border: 1px solid black;
+   max-width: 100%;
+   max-height: calc(100vh - 35px);
  }
 
  .slidecontainer {
@@ -66,11 +74,12 @@
  flex-direction: column;
  align-items: center;
  justify-content: space-around;
- min-height: 75%;
+ min-height: min(100%, 1000px);
 }
 
 #gallery {
   position: relative;
+  border: 10px solid white;
 }
 
 #gallery > img:nth-child(n+2) {
@@ -90,10 +99,10 @@
 <body>
 	<div class=content>
         <div>
-		<div id=gallery></div>
-		<div class="slidecontainer">
-        <input type="range" min="1" max="51" value="0" class="slider" id="slider">
-      <div>
+            <div id=gallery></div>
+            <div class="slidecontainer">
+                <input type="range" min="1" max="51" value="0" class="slider" id="slider">
+            </div>
     </div>
   </div>
 </body>
