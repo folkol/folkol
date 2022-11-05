@@ -1,5 +1,9 @@
+:root {
+    --dark-color: #19012E
+}
+
 html {
-    background-color: black;
+    background-color: var(--dark-color);
 }
 
 canvas {

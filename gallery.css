@@ -34,12 +34,12 @@ body {
 .frame {
     padding: 10px;
     box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.75);
-    border: 1px solid black;
+    border: 1px solid rgb(92, 92, 92);
     background-color: white;
 }
 
 img {
-    border: 1px solid black;
+    border: 1px solid rgb(92, 92, 92);
     vertical-align: top;
     max-width: 70vw;
     max-height: 70vh;
