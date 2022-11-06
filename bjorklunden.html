@@ -100,7 +100,7 @@
             left: 0;
         }
 
-        #gallery > img.fading {
+        #gallery > img.fade-in {
             -webkit-transition: opacity 0.3s ease-in;
             -moz-transition: opacity 0.3s ease-in;
             -o-transition: opacity 0.3s ease-in;
@@ -116,13 +116,17 @@
             pointer-events: none;
         }
 
-        .hidden {
+        .fade-out {
             opacity: 0;
             scale: 200%;
             -webkit-transition: all 0.5s ease-out;
             -moz-transition: all 0.5s ease-out;
             -o-transition: all 0.5s ease-out;
             transition: all 0.5s ease-out;
+        }
+
+        .hidden {
+            display: none;
         }
 
         input {
@@ -145,7 +149,7 @@
         <div class="slidecontainer">
             <input type="range" min="1" max="52" value="0" class="slider" id="slider">
         </div>
-        <span id="progress"></span>
+        <span id="progress" class="hidden"></span>
     </div>
 </div>
 </body>
@@ -220,7 +224,7 @@
 
     // When dragging the slider
     slider.oninput = function () {
-        playbutton.classList.add('hidden');
+        playbutton.classList.add('fade-out');
         clearInterval(interval);
         let image = images[this.value - 1];
         output.innerHTML = '';
@@ -229,12 +233,12 @@
     };
 
     function toggleAnimation() {
-        playbutton.classList.add('hidden');
+        playbutton.classList.add('fade-out');
         clearInterval(interval);
 
         function pushImage(next) {
             let image = images[next - 1];
-            image.classList.remove('fading');
+            image.classList.remove('fade-in');
             image.style.opacity = 0;
             output.appendChild(image)
             if (output.children.length > 2) {
@@ -242,7 +246,7 @@
             }
             // https://gist.github.com/paulirish/5d52fb081b3570c81e3a
             image.getBoundingClientRect()
-            image.classList.add('fading');
+            image.classList.add('fade-in');
             image.style.opacity = 1;
         }
 
@@ -271,27 +275,36 @@
         }
     }
 
-    let loaded = 0;
-    let images = imageNames.map(name => {
-        let image = new Image();
-        image.src = name;
-        if (image.complete) {
-            loaded++;
-        } else {
-            progress.innerHTML = `Loading: 0 / ${imageNames.length}...`;
 
-            image.onload = function () {
-                loaded++;
-                if (loaded === images.length) {
-                    progress.innerHTML = '';
-                } else {
-                    progress.innerHTML = `Loading: ${loaded} / ${images.length}...`;
-                }
-            };
-        }
-        image.classList.add('picture');
-        return image;
-    });
+    function downloadImages() {
+        let numFinished = 0;
+        setTimeout(() => {
+            // show a progress indicator in a while, in case we are still downloading
+            progress.classList.remove('hidden');
+        }, 500);
+        return imageNames.map(name => {
+            let image = new Image();
+            image.src = name;
+            if (image.complete) {
+                numFinished++;
+            } else {
+                progress.innerHTML = `Loading: 0 / ${imageNames.length}...`;
+
+                image.onload = function () {
+                    numFinished++;
+                    if (numFinished === imageNames.length) {
+                        progress.innerHTML = ''; // clear indicator when we are done, see 'progress' above
+                    } else {
+                        progress.innerHTML = `Loading: ${numFinished} / ${imageNames.length}...`;
+                    }
+                };
+            }
+            image.classList.add('picture');
+            return image;
+        });
+    }
+
+    let images = downloadImages();
 
     output.addEventListener('click', toggleAnimation);
 </script>
