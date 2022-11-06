@@ -75,10 +75,23 @@
             min-height: min(100%, 1000px);
         }
 
+        #box {
+            position: relative;
+        }
+
+        #progress {
+            position: absolute;
+            right: 0;
+            color: white;
+            opacity: .3;
+        }
+
         #gallery {
             position: relative;
             border: 10px solid white;
             cursor: pointer; /* Cursor on hover */
+            min-width: 1090px;
+            min-height: 709px;
         }
 
         #gallery > img.picture:nth-child(n+2) {
@@ -88,19 +101,28 @@
         }
 
         #gallery > img.fading {
-            -webkit-transition: opacity 0.5s ease-in;
-            -moz-transition: opacity 0.5s ease-in;
-            -o-transition: opacity 0.5s ease-in;
-            transition: opacity 0.5s ease-in;
+            -webkit-transition: opacity 0.3s ease-in;
+            -moz-transition: opacity 0.3s ease-in;
+            -o-transition: opacity 0.3s ease-in;
+            transition: opacity 0.3s ease-in;
         }
 
-        .playbutton {
+        #playbutton {
             position: absolute;
-            top: 25%;
-            left: 25%;
-            width: 50%;
-            height: 50%;
-            filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, .7));
+            filter: drop-shadow(10px 10px 5px rgba(0, 0, 0, .7));
+            left: calc(50% - 110px);
+            top: calc(50% - 150px);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .hidden {
+            opacity: 0;
+            scale: 200%;
+            -webkit-transition: all 0.5s ease-out;
+            -moz-transition: all 0.5s ease-out;
+            -o-transition: all 0.5s ease-out;
+            transition: all 0.5s ease-out;
         }
 
         input {
@@ -110,15 +132,20 @@
     </style>
 </head>
 <body>
-<h1 id="lol">...</h1>
 <div class=content>
-    <div>
+    <div id="box">
+        <svg id="playbutton" height="300" width="300" style="background-color:transparent">
+            <polygon
+                    points="20,20 240,150 20,280"
+                    style="stroke: lightgray; fill: transparent; stroke-width: 40; stroke-linejoin: round;"/>
+        </svg>
         <div id=gallery>
             <img src="seasons-4868-1.jpg" class="picture">
         </div>
         <div class="slidecontainer">
             <input type="range" min="1" max="52" value="0" class="slider" id="slider">
         </div>
+        <span id="progress"></span>
     </div>
 </div>
 </body>
@@ -130,6 +157,8 @@
     // todo: add date information, somehow
     let slider = document.getElementById("slider");
     let output = document.getElementById("gallery");
+    let progress = document.getElementById("progress");
+    let playbutton = document.getElementById("playbutton");
 
     let imageNames = [
         "seasons-4868-1.jpg",
@@ -191,6 +220,7 @@
 
     // When dragging the slider
     slider.oninput = function () {
+        playbutton.classList.add('hidden');
         clearInterval(interval);
         let image = images[this.value - 1];
         output.innerHTML = '';
@@ -199,6 +229,7 @@
     };
 
     function toggleAnimation() {
+        playbutton.classList.add('hidden');
         clearInterval(interval);
 
         function pushImage(next) {
@@ -240,13 +271,24 @@
         }
     }
 
-    let inFlight = 0;
+    let loaded = 0;
     let images = imageNames.map(name => {
         let image = new Image();
-        image.onload = function () {
-            inFlight--;
-        };
         image.src = name;
+        if (image.complete) {
+            loaded++;
+        } else {
+            progress.innerHTML = `Loading: 0 / ${imageNames.length}...`;
+
+            image.onload = function () {
+                loaded++;
+                if (loaded === images.length) {
+                    progress.innerHTML = '';
+                } else {
+                    progress.innerHTML = `Loading: ${loaded} / ${images.length}...`;
+                }
+            };
+        }
         image.classList.add('picture');
         return image;
     });
