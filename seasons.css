@@ -1,0 +1,139 @@
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    text-align: center;
+    background-color: rgb(35, 35, 35);
+    height: 100%;
+}
+
+img.picture {
+    display: block;
+    border: 1px solid gray;
+    max-width: 100%;
+    max-height: calc(100vh - 35px);
+}
+
+.slidecontainer {
+    width: 100%;
+}
+
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 15px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    margin: 2px 0 0;
+}
+
+.slider:hover {
+    opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Override default look */
+    appearance: none;
+    width: 25px;
+    height: 15px;
+    background: #80ABB7;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 25px;
+    height: 15px;
+    background: #80ABB7;
+    cursor: pointer;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    min-height: min(100%, 1000px);
+}
+
+#box {
+    position: relative;
+}
+
+#progress {
+    position: absolute;
+    right: 0;
+    color: white;
+    opacity: .3;
+}
+
+#gallery {
+    position: relative;
+    border: 10px solid white;
+    cursor: pointer; /* Cursor on hover */
+    min-width: 1090px;
+    min-height: 709px;
+}
+
+#gallery > img.picture:nth-child(n+2) {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#gallery > img.fade-in {
+    -webkit-transition: opacity 0.3s ease-in;
+    -moz-transition: opacity 0.3s ease-in;
+    -o-transition: opacity 0.3s ease-in;
+    transition: opacity 0.3s ease-in;
+}
+
+#playbutton {
+    position: absolute;
+    filter: drop-shadow(10px 10px 5px rgba(0, 0, 0, .7));
+    left: calc(50% - 110px);
+    top: calc(50% - 150px);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.fade-out {
+    opacity: 0;
+    scale: 200%;
+    -webkit-transition: all 0.5s ease-out;
+    -moz-transition: all 0.5s ease-out;
+    -o-transition: all 0.5s ease-out;
+    transition: all 0.5s ease-out;
+}
+
+.hidden {
+    display: none;
+}
+
+input {
+    display: inline-block;
+}
+
+.header {
+    text-align: left;
+    padding: 10px;
+    font-size: x-large;
+    color: white;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+
+.header a {
+    font-weight: bold;
+    color: gray;
+    text-decoration: none;
+}
