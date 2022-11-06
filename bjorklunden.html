@@ -1,365 +1,256 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>Document</title>
-	<script type="text/javascript">
-		
-	</script>
-	<style>
-  * {
-    margin: 0;
-    padding: 0;
-  }
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script type="text/javascript">
 
-  html {
-   height: 100%;
-  }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
 
-  body {
-   text-align: center;
-   background-color: rgb(35, 35, 35);
-   height: 100%;
- }
+        html {
+            height: 100%;
+        }
 
- img.picture {
-   display: block;
-   border: 1px solid black;
-   max-width: 100%;
-   max-height: calc(100vh - 35px);
- }
+        body {
+            text-align: center;
+            background-color: rgb(35, 35, 35);
+            height: 100%;
+        }
 
- .slidecontainer {
-  width: 100%;
-}
+        img.picture {
+            display: block;
+            border: 1px solid gray;
+            max-width: 100%;
+            max-height: calc(100vh - 35px);
+        }
 
-.slider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 15px;
-  background: #d3d3d3;
-  outline: none;
-  opacity: 0.7;
-  -webkit-transition: .2s;
-  transition: opacity .2s;
-  margin: 0;
-  margin-top: 2px;
-}
+        .slidecontainer {
+            width: 100%;
+        }
 
-.slider:hover {
-  opacity: 1;
-}
+        .slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 15px;
+            background: #d3d3d3;
+            outline: none;
+            opacity: 0.7;
+            -webkit-transition: .2s;
+            transition: opacity .2s;
+            margin: 0;
+            margin-top: 2px;
+        }
 
-.slider::-webkit-slider-thumb {
-  -webkit-appearance: none; /* Override default look */
-  appearance: none;
-  width: 25px;
-  height: 15px;
-  background: #80ABB7;
-  cursor: pointer;
-}
+        .slider:hover {
+            opacity: 1;
+        }
 
-.slider::-moz-range-thumb {
-  width: 25px;
-  height: 15px;
-  background: #80ABB7;
-  cursor: pointer;
-}
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none; /* Override default look */
+            appearance: none;
+            width: 25px;
+            height: 15px;
+            background: #80ABB7;
+            cursor: pointer;
+        }
 
-.content {
- display: flex;
- flex-direction: column;
- align-items: center;
- justify-content: space-around;
- min-height: min(100%, 1000px);
-}
+        .slider::-moz-range-thumb {
+            width: 25px;
+            height: 15px;
+            background: #80ABB7;
+            cursor: pointer;
+        }
 
-#gallery {
-  position: relative;
-  border: 10px solid white;
-  cursor: pointer; /* Cursor on hover */
-}
+        .content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            min-height: min(100%, 1000px);
+        }
 
-#gallery > img.picture:nth-child(n+2) {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
+        #gallery {
+            position: relative;
+            border: 10px solid white;
+            cursor: pointer; /* Cursor on hover */
+        }
 
-#gallery > img.fading {
-  -webkit-transition: opacity 0.5s ease-in-out;
-  -moz-transition: opacity 0.5s ease-in-out;
-  -o-transition: opacity 0.5s ease-in-out;
-  transition: opacity 0.5s ease-in-out;
-}
+        #gallery > img.picture:nth-child(n+2) {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
 
-.playbutton {
-    position: absolute;
-    top: 25%;
-    left: 25%;
-    width: 50%;
-    height: 50%;
-    filter: drop-shadow( 3px 3px 2px rgba(0, 0, 0, .7));
-}
+        #gallery > img.fading {
+            -webkit-transition: opacity 0.5s ease-in;
+            -moz-transition: opacity 0.5s ease-in;
+            -o-transition: opacity 0.5s ease-in;
+            transition: opacity 0.5s ease-in;
+        }
 
-input {
-  display: inline-block;
-}
+        .playbutton {
+            position: absolute;
+            top: 25%;
+            left: 25%;
+            width: 50%;
+            height: 50%;
+            filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, .7));
+        }
 
-</style>
+        input {
+            display: inline-block;
+        }
+
+    </style>
 </head>
 <body>
-    <div class=content>
-        <div>
-            <div id=gallery></div>
-            <div class="slidecontainer">
-                <input type="range" min="1" max="162" value="0" class="slider" id="slider">
-            </div>
+<h1 id="lol">...</h1>
+<div class=content>
+    <div>
+        <div id=gallery>
+            <img src="seasons-4868-1.jpg" class="picture">
+        </div>
+        <div class="slidecontainer">
+            <input type="range" min="1" max="52" value="0" class="slider" id="slider">
         </div>
     </div>
+</div>
 </body>
 <script type="text/javascript">
-  // todo: simplify this, just add one image and remove the oldest one instead of having a full stack of them
-  // todo: preload before running?
-  // todo: add some cue that we can click the image for animation
-  // todo: maybe swipe on image?
-  // todo: add date information, somehow
+    // todo: simplify this, just add one image and remove the oldest one instead of having a full stack of them
+    // todo: preload before running?
+    // todo: add some cue that we can click the image for animation
+    // todo: maybe swipe on image?
+    // todo: add date information, somehow
+    let slider = document.getElementById("slider");
+    let output = document.getElementById("gallery");
 
-	var slider = document.getElementById("slider");
-	var output = document.getElementById("gallery");
+    let imageNames = [
+        "seasons-4868-1.jpg",
+        "seasons-4868-2.jpg",
+        "seasons-4868-3.jpg",
+        "seasons-4868-4.jpg",
+        "seasons-4868-5.jpg",
+        "seasons-4868-6.jpg",
+        "seasons-4868-7.jpg",
+        "seasons-4868-8.jpg",
+        "seasons-4868-9.jpg",
+        "seasons-4868-10.jpg",
+        "seasons-4868-11.jpg",
+        "seasons-4868-12.jpg",
+        "seasons-4868-13.jpg",
+        "seasons-4868-14.jpg",
+        "seasons-4868-15.jpg",
+        "seasons-4868-16.jpg",
+        "seasons-4868-17.jpg",
+        "seasons-4868-18.jpg",
+        "seasons-4868-19.jpg",
+        "seasons-4868-20.jpg",
+        "seasons-4868-21.jpg",
+        "seasons-4868-22.jpg",
+        "seasons-4868-23.jpg",
+        "seasons-4868-24.jpg",
+        "seasons-4868-25.jpg",
+        "seasons-4868-26.jpg",
+        "seasons-4868-27.jpg",
+        "seasons-4868-28.jpg",
+        "seasons-4868-29.jpg",
+        "seasons-4868-30.jpg",
+        "seasons-4868-31.jpg",
+        "seasons-4868-32.jpg",
+        "seasons-4868-33.jpg",
+        "seasons-4868-34.jpg",
+        "seasons-4868-35.jpg",
+        "seasons-4868-36.jpg",
+        "seasons-4868-37.jpg",
+        "seasons-4868-38.jpg",
+        "seasons-4868-39.jpg",
+        "seasons-4868-40.jpg",
+        "seasons-4868-41.jpg",
+        "seasons-4868-42.jpg",
+        "seasons-4868-43.jpg",
+        "seasons-4868-44.jpg",
+        "seasons-4868-45.jpg",
+        "seasons-4868-46.jpg",
+        "seasons-4868-47.jpg",
+        "seasons-4868-48.jpg",
+        "seasons-4868-49.jpg",
+        "seasons-4868-50.jpg",
+        "seasons-4868-51.jpg",
+        "seasons-4868-52.jpg",
+    ];
 
-  var imageNames = [
-    "seasons-15937-001.jpg",
-    "seasons-15937-002.jpg",
-    "seasons-15937-003.jpg",
-    "seasons-15937-004.jpg",
-    "seasons-15937-005.jpg",
-    "seasons-15937-006.jpg",
-    "seasons-15937-007.jpg",
-    "seasons-15937-008.jpg",
-    "seasons-15937-009.jpg",
-    "seasons-15937-010.jpg",
-    "seasons-15937-011.jpg",
-    "seasons-15937-012.jpg",
-    "seasons-15937-013.jpg",
-    "seasons-15937-014.jpg",
-    "seasons-15937-015.jpg",
-    "seasons-15937-016.jpg",
-    "seasons-15937-017.jpg",
-    "seasons-15937-018.jpg",
-    "seasons-15937-019.jpg",
-    "seasons-15937-020.jpg",
-    "seasons-15937-021.jpg",
-    "seasons-15937-022.jpg",
-    "seasons-15937-023.jpg",
-    "seasons-15937-024.jpg",
-    "seasons-15937-025.jpg",
-    "seasons-15937-026.jpg",
-    "seasons-15937-027.jpg",
-    "seasons-15937-028.jpg",
-    "seasons-15937-029.jpg",
-    "seasons-15937-030.jpg",
-    "seasons-15937-031.jpg",
-    "seasons-15937-032.jpg",
-    "seasons-15937-033.jpg",
-    "seasons-15937-034.jpg",
-    "seasons-15937-035.jpg",
-    "seasons-15937-036.jpg",
-    "seasons-15937-037.jpg",
-    "seasons-15937-038.jpg",
-    "seasons-15937-039.jpg",
-    "seasons-15937-040.jpg",
-    "seasons-15937-041.jpg",
-    "seasons-15937-042.jpg",
-    "seasons-15937-043.jpg",
-    "seasons-15937-044.jpg",
-    "seasons-15937-045.jpg",
-    "seasons-15937-046.jpg",
-    "seasons-15937-047.jpg",
-    "seasons-15937-048.jpg",
-    "seasons-15937-049.jpg",
-    "seasons-15937-050.jpg",
-    "seasons-15937-051.jpg",
-    "seasons-15937-052.jpg",
-    "seasons-15937-053.jpg",
-    "seasons-15937-054.jpg",
-    "seasons-15937-055.jpg",
-    "seasons-15937-056.jpg",
-    "seasons-15937-057.jpg",
-    "seasons-15937-058.jpg",
-    "seasons-15937-059.jpg",
-    "seasons-15937-060.jpg",
-    "seasons-15937-061.jpg",
-    "seasons-15937-062.jpg",
-    "seasons-15937-063.jpg",
-    "seasons-15937-064.jpg",
-    "seasons-15937-065.jpg",
-    "seasons-15937-066.jpg",
-    "seasons-15937-067.jpg",
-    "seasons-15937-068.jpg",
-    "seasons-15937-069.jpg",
-    "seasons-15937-070.jpg",
-    "seasons-15937-071.jpg",
-    "seasons-15937-072.jpg",
-    "seasons-15937-073.jpg",
-    "seasons-15937-074.jpg",
-    "seasons-15937-075.jpg",
-    "seasons-15937-076.jpg",
-    "seasons-15937-077.jpg",
-    "seasons-15937-078.jpg",
-    "seasons-15937-079.jpg",
-    "seasons-15937-080.jpg",
-    "seasons-15937-081.jpg",
-    "seasons-15937-082.jpg",
-    "seasons-15937-083.jpg",
-    "seasons-15937-084.jpg",
-    "seasons-15937-085.jpg",
-    "seasons-15937-086.jpg",
-    "seasons-15937-087.jpg",
-    "seasons-15937-088.jpg",
-    "seasons-15937-089.jpg",
-    "seasons-15937-090.jpg",
-    "seasons-15937-091.jpg",
-    "seasons-15937-092.jpg",
-    "seasons-15937-093.jpg",
-    "seasons-15937-094.jpg",
-    "seasons-15937-095.jpg",
-    "seasons-15937-096.jpg",
-    "seasons-15937-097.jpg",
-    "seasons-15937-098.jpg",
-    "seasons-15937-099.jpg",
-    "seasons-15937-100.jpg",
-    "seasons-15937-101.jpg",
-    "seasons-15937-102.jpg",
-    "seasons-15937-103.jpg",
-    "seasons-15937-104.jpg",
-    "seasons-15937-105.jpg",
-    "seasons-15937-106.jpg",
-    "seasons-15937-107.jpg",
-    "seasons-15937-108.jpg",
-    "seasons-15937-109.jpg",
-    "seasons-15937-110.jpg",
-    "seasons-15937-111.jpg",
-    "seasons-15937-112.jpg",
-    "seasons-15937-113.jpg",
-    "seasons-15937-114.jpg",
-    "seasons-15937-115.jpg",
-    "seasons-15937-116.jpg",
-    "seasons-15937-117.jpg",
-    "seasons-15937-118.jpg",
-    "seasons-15937-119.jpg",
-    "seasons-15937-120.jpg",
-    "seasons-15937-121.jpg",
-    "seasons-15937-122.jpg",
-    "seasons-15937-123.jpg",
-    "seasons-15937-124.jpg",
-    "seasons-15937-125.jpg",
-    "seasons-15937-126.jpg",
-    "seasons-15937-127.jpg",
-    "seasons-15937-128.jpg",
-    "seasons-15937-129.jpg",
-    "seasons-15937-130.jpg",
-    "seasons-15937-131.jpg",
-    "seasons-15937-132.jpg",
-    "seasons-15937-133.jpg",
-    "seasons-15937-134.jpg",
-    "seasons-15937-135.jpg",
-    "seasons-15937-136.jpg",
-    "seasons-15937-137.jpg",
-    "seasons-15937-138.jpg",
-    "seasons-15937-139.jpg",
-    "seasons-15937-140.jpg",
-    "seasons-15937-141.jpg",
-    "seasons-15937-142.jpg",
-    "seasons-15937-143.jpg",
-    "seasons-15937-144.jpg",
-    "seasons-15937-145.jpg",
-    "seasons-15937-146.jpg",
-    "seasons-15937-147.jpg",
-    "seasons-15937-148.jpg",
-    "seasons-15937-149.jpg",
-    "seasons-15937-150.jpg",
-    "seasons-15937-151.jpg",
-    "seasons-15937-152.jpg",
-    "seasons-15937-153.jpg",
-    "seasons-15937-154.jpg",
-    "seasons-15937-155.jpg",
-    "seasons-15937-156.jpg",
-    "seasons-15937-157.jpg",
-    "seasons-15937-158.jpg",
-    "seasons-15937-159.jpg",
-    "seasons-15937-160.jpg",
-    "seasons-15937-161.jpg",
-    "seasons-15937-162.jpg",
-  ];
+    let animation = false;
+    let interval = 0;
 
-  var animation = false;
-  var interval = 0;
-
-  // Update the current slider value (each time you drag the slider handle)
-  slider.oninput = function() {
-    clearInterval(interval);
-    let target = [this.value] - 1;
-
-    images.forEach((image, i) => {
-      image.classList.remove('fading');
-      image.style.opacity = i === target ? 1 : 0;
-    })
-      // https://gist.github.com/paulirish/5d52fb081b3570c81e3a
-      images[0].offsetLeft;
-      images.forEach((image, i) => {
-        image.classList.add('fading');
-      });
-      animation = false;
+    // When dragging the slider
+    slider.oninput = function () {
+        clearInterval(interval);
+        let image = images[this.value - 1];
+        output.innerHTML = '';
+        output.appendChild(image);
+        animation = false;
     };
 
     function toggleAnimation() {
-      clearInterval(interval);
-      if(!animation) {
-        animation = true;
-        let current = parseInt(slider.value);
-        let next = current + 1;
-        if(next > parseInt(slider.max)) {
-          next = 1;
-          images.forEach((image, i) => image.style.opacity = i === 0 ? 1 : 0);
+        clearInterval(interval);
+
+        function pushImage(next) {
+            let image = images[next - 1];
+            image.classList.remove('fading');
+            image.style.opacity = 0;
+            output.appendChild(image)
+            if (output.children.length > 2) {
+                output.removeChild(output.firstChild);
+            }
+            // https://gist.github.com/paulirish/5d52fb081b3570c81e3a
+            image.getBoundingClientRect()
+            image.classList.add('fading');
+            image.style.opacity = 1;
         }
-        slider.value = next;
-        images[next - 1].style.opacity = 1;
-        interval = setInterval(() => {
-          let current = parseInt(slider.value);
-          let next = current + 1;
-          if(next > parseInt(slider.max)) {
-            next = 1;
-            images.forEach((image, i) => image.style.opacity = i === 0 ? 1 : 0);
+
+        function getNext() {
+            let current = parseInt(slider.value);
+            let next = current + 1;
+            if (next > parseInt(slider.max)) {
+                next = 1;
+            }
+            return next;
+        }
+
+        if (!animation) {
+            animation = true;
+            let next = getNext();
+            pushImage(next);
+
             slider.value = next;
-          } else {
-            images[next - 1].style.opacity = 1;
-            slider.value = next;
-          }
-        }, 1000/2);
-      }
-      else {
-        animation = false;
-      }
+            interval = setInterval(() => {
+                let next = getNext();
+                pushImage(next);
+                slider.value = next;
+            }, 1000 / 2);
+        } else {
+            animation = false;
+        }
     }
 
+    let inFlight = 0;
     let images = imageNames.map(name => {
-      // console.log(name, output.children)
-      let image = new Image();
-      image.src = name;
-      image.style.opacity = 0;
-      image.classList.add('picture');
-      image.classList.add('fading');
-      output.appendChild(image);
-      return image;
+        let image = new Image();
+        image.onload = function () {
+            inFlight--;
+        };
+        image.src = name;
+        image.classList.add('picture');
+        return image;
     });
 
-    images[0].style.opacity = 1;
-    // Without this, Safari stutters in the beginning of the (first) animation
-    images[0].offsetLeft;
-
     output.addEventListener('click', toggleAnimation);
-  //toggleAnimation();
 </script>
 </html>
