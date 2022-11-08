@@ -81,8 +81,8 @@ img.picture {
     position: relative;
     border: 10px solid white;
     cursor: pointer; /* Cursor on hover */
-    min-width: 1090px;
-    min-height: 709px;
+    /*min-width: 1090px;*/
+    /*min-height: 709px;*/
 }
 
 #gallery > img.picture:nth-child(n+2) {
@@ -126,6 +126,7 @@ input {
 
 .header {
     text-align: left;
+    float: left;
     padding: 10px;
     font-size: x-large;
     color: white;
