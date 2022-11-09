@@ -126,7 +126,10 @@ input {
 
 .header {
     text-align: left;
-    float: left;
+    /*position: fixed;*/
+    /*top: 0;*/
+    /*left: 0;*/
+    /*z-index: 10;*/
     padding: 10px;
     font-size: x-large;
     color: white;
