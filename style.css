@@ -131,3 +131,8 @@ a:hover, a:focus {
     background: url('seasons.jpg');
     background-size: cover;
 }
+
+#haxxor {
+    background: url('haxxor.jpg');
+    background-size: cover;
+}
