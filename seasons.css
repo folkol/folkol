@@ -101,8 +101,8 @@ img.picture {
 #playbutton {
     position: absolute;
     filter: drop-shadow(10px 10px 5px rgba(0, 0, 0, .7));
-    left: calc(50% - 200px);
-    top: calc(50% - 150px);
+    left: calc(50% - 100px);
+    top: calc(50% - 75px);
     z-index: 1;
     pointer-events: none;
 }
