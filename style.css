@@ -136,3 +136,8 @@ a:hover, a:focus {
     background: url('haxxor.jpg');
     background-size: cover;
 }
+
+#misc {
+    background: url('misc.jpg');
+    background-size: cover;
+}
