@@ -1,0 +1,276 @@
+<!doctype html>
+<html>
+<head>
+    <title>Twilight Massacre Training Grounds</title>
+    <style>
+        html {
+            background: rgb(2, 0, 36);
+            background: radial-gradient(rgba(40, 37, 66, 1), rgba(30, 21, 42, 1));
+            color: white;
+            font-size: xxx-large;
+        }
+
+        .content {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #arena {
+            position: relative;
+            width: min(90vw, 90vh);
+            height: min(90vw, 90vh);
+            background-image: url(bg.png);
+            background-size: cover;
+            background-color: white;
+            border: 5px solid color(srgb 0.0427 0.0026 0.065);
+        }
+
+        .unit {
+            position: absolute;
+            width: 3%;
+            height: 3%;
+            transform: translate(-50%, -50%);
+            background-size: cover;
+        }
+
+        .player {
+            z-index: 1337;
+            background-image: url(grunt.gif);
+            position: relative;
+        }
+
+        #speech {
+            top: 0;
+            opacity: 0;
+            position: absolute;
+            white-space: nowrap;
+            transform: translateY(-100%);
+        }
+
+        .assassin {
+            width: 5%;
+            height: 5%;
+            z-index: 666;
+        }
+
+        .outline {
+            z-index: 1000;
+        }
+
+        .charge-line {
+            width: 400px;
+            height: 0;
+            transform-origin: left;
+            position: absolute;
+            -webkit-box-shadow: 0 0 min(1vw, 1vh) min(0.5vw, 0.5vh) rgba(255, 0, 0, 0.9);
+            -moz-box-shadow: 0 0 min(1vw, 1vh) min(0.5vw, 0.5vh) rgba(255, 0, 0, 0.9);
+            box-shadow: 0 0 min(1vw, 1vh) min(0.5vw, 0.5vh) rgba(255, 0, 0, 0.9);
+            border: 0.1em solid red;
+        }
+    </style>
+</head>
+<body>
+<div class="content">
+    <div id=arena>
+        <div id="player" style="top: 40%; left: 50%;" class="unit player">
+            <span id="speech">Good!</span>
+        </div>
+        <img id=target src="clone_outline.webp" style="left: 38%; top: 30%; opacity: 0" class="unit assassin outline">
+
+        <img id=clone_0 src="clone.webp" style="left: 38%; top: 30%;" class="unit assassin">
+        <img id=clone_1 src="clone.webp" style="left: 61%; top: 30%;" class="unit assassin">
+        <img id=clone_2 src="clone.webp" style="left: 72%; top: 50%;" class="unit assassin">
+        <img id=clone_3 src="clone.webp" style="left: 62%; top: 70%;" class="unit assassin">
+        <img id=clone_4 src="clone.webp" style="left: 38%; top: 70%;" class="unit assassin">
+
+        <img src="circle.png" style="left: 38%; top: 38%;" class="unit">
+        <img src="triangle.png" style="left: 54%; top: 35%;" class="unit">
+        <img src="diamond.png" style="left: 65%; top: 46%;" class="unit">
+        <img src="star.png" style="left: 62%; top: 62%;" class="unit">
+        <img src="cross.png" style="left: 45%; top: 66%;" class="unit">
+        <img src="square.png" style="left: 35%; top: 54%;" class="unit">
+
+        <div id=arrow style="top: 70%; left: 38%; opacity: 0" class="charge-line"></div>
+    </div>
+</div>
+<script>
+    let keysPressed = {};
+    addEventListener("keydown", ({key}) => keysPressed[key] = true)
+    addEventListener("keyup", ({key}) => keysPressed[key] = false);
+
+    let arena = document.getElementById('arena');
+    let player = document.getElementById('player');
+    let arrow = document.getElementById('arrow');
+    let target = document.getElementById('target');
+    let speech = document.getElementById('speech');
+
+    let clone_spots = [
+        [38, 30],
+        [61, 30],
+        [72, 50],
+        [62, 70],
+        [38, 70],
+        [28, 50],
+    ];
+
+    let player_pos = [50, 40];
+    let player_speed = 0.01;
+    let clone_speed = 0.1;
+    let current_phase = 0;
+    let active_clone = 0;
+    let phases = [
+        {name: 'idle', duration: 1000},
+        {name: 'arrows', duration: 5000},
+        {name: 'charge', duration: 2000},
+    ];
+
+    let clones = [0, 1, 2, 3, 4].map(cloneId => {
+        let [x, y] = clone_spots[cloneId];
+        return {
+            element: document.getElementById(`clone_${cloneId}`),
+            pos: cloneId,
+            current_pos: [x, y],
+            target_pos: [x, y]
+        };
+    });
+
+    function adjust_arrow_angle() {
+        let [length, rad] = dist_and_angle(clone_spots[clones[active_clone].pos], player_pos);
+
+        arrow.style.width = `${length * arena.clientHeight / 100}px`
+        arrow.style.transform = `rotate(${rad}rad)`;
+
+        let [target_x, target_y] = project(player_pos, rad, 8);
+        target.style.left = `${target_x}%`;
+        target.style.top = `${target_y}%`;
+    }
+
+    function update_player_position(elapsed) {
+        let [dx, dy] = [0, 0];
+        if (keysPressed['a'] || keysPressed['ArrowLeft']) {
+            dx = -1;
+        }
+        if (keysPressed['d'] || keysPressed['ArrowRight']) {
+            dx = 1;
+        }
+        if (keysPressed['w'] || keysPressed['ArrowUp']) {
+            dy = -1;
+        }
+        if (keysPressed['s'] || keysPressed['ArrowDown']) {
+            dy = 1;
+        }
+
+        let velocity = Math.sqrt(dx * dx + dy * dy)
+        if (velocity > 0) {
+            player_pos[0] += player_speed * elapsed * (dx / velocity);
+            player_pos[1] += player_speed * elapsed * (dy / velocity);
+            player.style.left = `${player_pos[0]}%`;
+            player.style.top = `${player_pos[1]}%`;
+        }
+    }
+
+    function project([current_x, current_y], rad, distance) {
+        let projected_x = current_x + Math.cos(rad) * distance;
+        let projected_y = current_y + Math.sin(rad) * distance;
+        return [projected_x, projected_y];
+    }
+
+    function update_clones(elapsed) {
+        let delta = clone_speed * elapsed;
+        clones.forEach(clone => {
+            let [dist, rad] = dist_and_angle(clone.current_pos, clone.target_pos)
+            if (dist < delta) {
+                clone.current_pos = [...clone.target_pos];
+            } else {
+                clone.current_pos = project(clone.current_pos, rad, delta);
+            }
+            clone.element.style.left = `${clone.current_pos[0]}%`;
+            clone.element.style.top = `${clone.current_pos[1]}%`;
+        });
+    }
+
+    let lastFrame = document.timeline.currentTime;
+
+    function animate(timestamp) {
+        let elapsed = timestamp - lastFrame;
+        adjust_arrow_angle();
+        update_player_position(elapsed);
+        update_clones(elapsed);
+        requestAnimationFrame(animate);
+        lastFrame = timestamp;
+    }
+
+    function run_idle_phase() {
+        speech.style.opacity = '0';
+        active_clone = Math.floor(Math.random() * clones.length)
+        let [arrow_left, arrow_top] = clone_spots[clones[active_clone].pos];
+        arrow.style.left = `${arrow_left}%`;
+        arrow.style.top = `${arrow_top}%`;
+        clones.forEach(clone => {
+            clone.target_pos = [...clone_spots[clone.pos]]
+            clone.current_pos = [...clone_spots[clone.pos]]
+        });
+    }
+
+    function dist_and_angle([from_x, from_y], [to_x, to_y]) {
+        let distance = Math.hypot(to_y - from_y, to_x - from_x);
+        let rad = Math.atan2(to_y - from_y, to_x - from_x);
+        return [distance, rad];
+    }
+
+    function run_charge_phase() {
+        let [length, rad] = dist_and_angle(clone_spots[clones[active_clone].pos], player_pos);
+        let arena_size = arena.clientHeight;
+        arrow.style.width = `${length * arena_size / 100}px`
+        arrow.style.transform = `rotate(${rad}rad)`;
+
+        let [projected_x, projected_y] = project(player_pos, rad, 8)
+        clones.forEach(clone => {
+            clone.pos = (clone.pos + 2) % clone_spots.length;
+            clone.target_pos = [...clone_spots[clone.pos]]
+        });
+        clones[active_clone].target_pos = [projected_x, projected_y];
+
+        let [error, _] = dist_and_angle(clones[active_clone].target_pos, clone_spots[clones[active_clone].pos]);
+        if (error < 0.1) {
+            speech.innerText = `PERFECT!`;
+        } else if (error < 1) {
+            speech.innerText = `Good`;
+        } else if (error < 5) {
+            speech.innerText = `Ok...`;
+        } else {
+            speech.innerText = `WIPE (${Math.floor(error)} yards off)`;
+        }
+
+        arrow.style.opacity = '0'
+        target.style.opacity = '0'
+        speech.style.opacity = '1';
+    }
+
+    function game_tick() {
+        let phase = phases[current_phase];
+        switch (phase.name) {
+            case 'idle':
+                run_idle_phase();
+                break;
+            case 'arrows':
+                arrow.style.opacity = '1'
+                target.style.opacity = '0.3'
+                break;
+            case 'charge': {
+                run_charge_phase();
+                break;
+            }
+        }
+        current_phase = (current_phase + 1) % phases.length;
+        setTimeout(game_tick, phase.duration);
+    }
+
+    game_tick();
+    requestAnimationFrame(animate)
+</script>
+</body>
+</html>
