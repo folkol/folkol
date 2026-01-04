@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Colorwheel Histogram</title>
+	<meta name='viewport' content='width=device-width, user-scalable=no'/>
+	<style type="text/css">
+		img {
+			height: 500px;
+			width: auto;
+		}
+		div.gallery * {
+			display: inline-block;
+		}
+		#thumbnails img {
+			height: 100px;
+			width: auto;
+			display: inline-block;
+		}
+	</style>
+</head>
+<body>
+	<div class=gallery>
+		<div id=frame></div>
+		<img id=img src="">
+	</div>
+	<div id=thumbnails></div>
+</body>
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/105/three.min.js'></script>
+
+<script>
+	var scene, renderer, camera, animation, colorwheel, previousRotation = rotation = 0;
+
+	function render() {
+		if(rotation) {
+			colorwheel.rotation.y = rotation / 100;
+		}
+		renderer.render(scene, camera);
+	}
+
+	function init (size) {
+		renderer = new THREE.WebGLRenderer();
+		renderer.setPixelRatio(window.devicePixelRatio);
+		renderer.setSize( size, size );
+		frame.appendChild( renderer.domElement );
+
+		var dragStart = undefined;
+
+		function stopRotation(e) {
+			dragStart = undefined;
+			previousRotation = rotation;
+		}
+
+		function updateRotation(screenX) {
+			if(dragStart) {
+				rotation = previousRotation + (screenX - dragStart);
+				render();
+			}
+		}
+
+		frame.addEventListener('mousedown', e => dragStart = e.screenX);
+		frame.addEventListener('touchstart', e => dragStart = e.touches[0].screenX);
+		window.addEventListener('mouseup', stopRotation);
+		window.addEventListener('mouseout', stopRotation);
+		window.addEventListener('touchend', stopRotation);
+		frame.addEventListener('mousemove', e => updateRotation(e.screenX));
+		frame.addEventListener('touchmove', e => updateRotation(e.touches[0].screenX));
+	}
+
+	function update() {
+		scene = new THREE.Scene();
+		camera = new THREE.PerspectiveCamera(50, 1, 1, 100 );
+		camera.position.set( 0, 15, 20);
+		camera.lookAt(0, 0, 0);
+		camera.aspect = 1;
+		camera.updateProjectionMatrix();
+
+		function createHistogram(img) {
+			function rgb2hsl(r, g, b) {  // https://gist.github.com/mjackson/5311256
+				r /= 255, g /= 255, b /= 255;
+
+				var max = Math.max(r, g, b), min = Math.min(r, g, b);
+				var h, s, l = (max + min) / 2;
+
+				if (max == min) {
+				    h = s = 0; // achromatic
+				} else {
+					var d = max - min;
+					s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+					switch (max) {
+						case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+						case g: h = (b - r) / d + 2; break;
+						case b: h = (r - g) / d + 4; break;
+					}
+
+					h /= 6;
+				}
+
+				return [ h, s, l ];
+			}
+
+			function clipped(r, g, b) {
+				return r < 5 && g < 5 && b < 5 || r > 250 && g > 250 && b > 250;
+			}
+
+			var buckets = [
+				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+			];
+
+			var canvas = document.createElement('canvas');
+		    var ctx = canvas.getContext("2d");
+		    canvas.width = img.width;
+		    canvas.height = img.height;
+		    ctx.drawImage(img, 0, 0);
+		    var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+		    var data = imgData.data;
+
+			for(i = 0; i < data.length; i+=4) {
+		    	const [r, g, b] = data.slice(i, i + 4);
+
+		    	if(clipped(r, g, b)) {
+		    		continue;
+		    	}
+
+		    	const [h, s, l] = rgb2hsl(r, g, b);
+		    	var x = Math.floor(l * 6);
+		    	var y = Math.floor(h * 12)
+		    	buckets[x][y] += 1;
+		    }
+		    return buckets;
+		}
+
+	    function createColorwheel(buckets) {
+		    function createCell(h, ring, color) {
+				const geometry = new THREE.Geometry();
+
+				var k = Math.atan(Math.PI * 2 / 24);
+				geometry.vertices.push(new THREE.Vector3(-0.5, 0, -0.5 - (ring + 0) * k));
+				geometry.vertices.push(new THREE.Vector3( 0.5, 0, -0.5 - (ring + 1) * k));
+				geometry.vertices.push(new THREE.Vector3( 0.5, 0,  0.5 + (ring + 1) * k));
+				geometry.vertices.push(new THREE.Vector3(-0.5, 0,  0.5 + (ring + 0) * k));
+				geometry.vertices.push(new THREE.Vector3(-0.5, h, -0.5 - (ring + 0) * k));
+				geometry.vertices.push(new THREE.Vector3( 0.5, h, -0.5 - (ring + 1) * k));
+				geometry.vertices.push(new THREE.Vector3( 0.5, h,  0.5 + (ring + 1) * k));
+				geometry.vertices.push(new THREE.Vector3(-0.5, h,  0.5 + (ring + 0) * k));
+
+				// Bottom
+				geometry.faces.push( new THREE.Face3( 0, 1, 2 ) );
+				geometry.faces.push( new THREE.Face3( 2, 3, 0 ) );
+				// Up
+				geometry.faces.push( new THREE.Face3( 4, 7, 6 ) );
+				geometry.faces.push( new THREE.Face3( 6, 5, 4 ) );
+				// Inner
+				geometry.faces.push( new THREE.Face3( 0, 3, 7 ) );
+				geometry.faces.push( new THREE.Face3( 7, 4, 0 ) );
+				// Outer
+				geometry.faces.push( new THREE.Face3( 1, 5, 6 ) );
+				geometry.faces.push( new THREE.Face3( 6, 2, 1 ) );
+				// Right
+				geometry.faces.push( new THREE.Face3( 0, 4, 5 ) );
+				geometry.faces.push( new THREE.Face3( 5, 1, 0 ) );
+				// Left
+				geometry.faces.push( new THREE.Face3( 2, 6, 7 ) );
+				geometry.faces.push( new THREE.Face3( 7, 3, 2 ) );
+
+				geometry.computeFaceNormals();
+
+				return new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color: color}));
+			}
+
+		    var max = Math.max(...[].concat(...buckets));
+			const colorwheel = new THREE.Object3D();
+			for(j = 0; j < 6; j++) {
+				for(i = 0; i < 12; i++) {
+					const hue = 360/12.0 * i;
+					const saturation = 100;
+					const lightness = Math.floor(100/7 + 100/7 * j);
+
+					var h = 0.1 + 10 * Math.log(1 + buckets[j][i] / max);
+					const color = new THREE.Color(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
+					const cell = createCell(h, j, color);
+					cell.rotation.y = Math.PI * 2 / 12 * i;
+					cell.translateX(3 + j);
+					colorwheel.add( cell );
+				}
+			}
+
+			return colorwheel;
+		}
+
+		var buckets = createHistogram(img);
+		colorwheel = createColorwheel(buckets);
+		scene.add( colorwheel );
+
+		const spot = new THREE.DirectionalLight(0xFFFFFF, 1);
+		spot.position.set(25, 15, 25);
+		scene.add(spot);
+
+		scene.add( new THREE.AmbientLight( 0x606060 ) );
+
+		render();
+	}
+
+	init(500);
+
+	images = [  // https://www.brushwiz.com/most-famous-paintings/
+		"A_Bar_At_The_Folies_Bergere_by_Edouard_Manet.jpg",
+		"A_Cotton_Office_In_New_Orleans_by_Edgar_Degas_U56.jpg",
+		"A_Friend_In_Need_by_Cassius_Marcellus_Coolidge_A22.jpg",
+		"Adoration_Of_The_Magi_by_Gentile_Da_Fabriano_C29.jpg",
+		"American_Gothic_by_Grant_Wood_C92.jpg",
+		"Annunciation_by_Leonardo_Da_Vinci.jpg",
+		"Arrangement_In_Grey_And_Black_No_1_Portrait_Of_The_Artists_Mother_by_James_Abbott_McNeill_Whistler_C15.jpg",
+		"Bacchus_And_Ariadne_by_Titian_Y83.jpg",
+		"Barge_Haulers_On_The_Volga_by_Ilya_Repin.jpg",
+		"Battle_Of_Issus_by_Albrecht_Altdorfer_E1.jpg",
+		"Boulevard_Montmartre_Spring_by_Camille_Pissarro_M76.jpg",
+		"Breezing_Up_by_Winslow_Homer_W66.jpg",
+		"Cardsharps_by_Caravaggio.jpg",
+		"Charles_I_In_Three_Positions_by_Anthony_Van_Dyck.jpg",
+		"Composition_VIII_by_Wassily_Kandinsky_K55.jpg",
+		"Dance_At_The_Moulin_De_La_Galette_by_Pierre_Auguste_Renoir.jpg",
+		"Dante_And_Virgil_In_Hell_by_William-Adolphe_Bouguereau_F37.jpg",
+		"Feast_Of_The_Rosary_by_Albrecht_Durer.jpg",
+		"Flaming_June_by_Frederic_Lord_Leighton_I45.jpg",
+		"Fort_Vimieux_by_Joseph_Mallord_William_Turner_A45.jpg",
+		"Foxes_by_Franz_Marc_Y6.jpg",
+		"Hunters_In_The_Snow_by_Pieter_Bruegel_The_Elder_K1.jpg",
+		"Impression,_Sunrise_by_Claude_Monet.jpg",
+		"Large_Bathers_by_Paul_Cezanne_J99.jpg",
+		"Large_Seated_Nude_by_Amedeo_Modigliani.jpg",
+		"Las_Meninas_by_Diego_Velazquez_L36.jpg",
+		"Luncheon_Of_The_Boating_Party_by_Pierre-Auguste_Renoir_X40.jpg",
+		"Mars_And_Venus_Allegory_Of_Peace_by_Louis-Jean-Francois_Lagrenee_S96.jpg",
+		"Mona_Lisa_by_Leonardo_Da_Vinci.jpg",
+		"Mr_And_Mrs_Robert_Andrews_by_Thomas_Gainsborough.jpg",
+		"Musicians_by_Caravaggio.jpg",
+		"Napoleon_Crossing_The_Alps_by_Jacques-Louis_David_I39.jpg",
+		"Odalisque_by_Francois_Boucher.jpg",
+		"Olympia_by_Edouard_Manet.jpg",
+		"Paris_Street_In_Rainy_Weather_by_Gustave_Caillebotte.jpg",
+		"Pilgrimage_To_Cythera_by_Antoine_Watteau_H25.jpg",
+		"Pollice_Verso_by_Jean-Leon_Gerome_N88.jpg",
+		"Portrait_Of_A_Gentleman_Skating_by_Gilbert_Stuart_D40.jpg",
+		"Portrait_Of_A_Young_Man_by_Raphael_L5.jpg",
+		"Primavera_by_Sandro_Botticelli_C99.jpg",
+		"Red_Balloon_by_Paul_Klee_G28.jpg",
+		"Saturn_Devouring_His_Son_by_Francisco_Goya_A27.jpg",
+		"Sleeping_Venus_by_Titian_G21.jpg",
+		"St._George_And_The_Dragon_by_Paolo_Uccello_O25.jpg",
+		"Stag_Night_At_Sharkeys_by_George_Bellows.jpg",
+		"Sunday_Afternoon_On_The_Island_Of_La_Grande_Jatte_by_Georges_Seurat_T11.jpg",
+		"Supper_At_Emmaus_by_Caravaggio_G53.jpg",
+		"Susanna_And_The_Elders_by_Artemisia_Gentileschi_R8.jpg",
+		"The_Ambassadors_by_Hans_Holbein_the_Younger_N93.jpg",
+		"The_Anatomy_Lesson_Of_Dr._Nicolaes_Tulp_by_Rembrandt_O27.jpg",
+		"The_Arnolfini_Portrait_by_Jan_van_Eyck_V44.jpg",
+		"The_Astronomer_by_Johannes_Vermeer_L73.jpg",
+		"The_Avenue_In_The_Rain_by_Childe_Hassam.jpg",
+		"The_Bath_by_Jean-Leon_Gerome_I47.jpg",
+		"The_Birth_Of_Venus_by_Alexandre_Cabanel_R44.jpg",
+		"The_Birth_Of_Venus_by_Sandro_Botticelli_V46.jpg",
+		"The_Boat_Trip_by_Mary_Cassatt_B96.jpg",
+		"The_Creation_Of_Adam_by_Michelangelo.jpg",
+		"The_Fall_Of_The_Damned_by_Peter_Paul_Rubens_K14.jpg",
+		"The_Garden_Of_Earthly_Delights_-_Central_Panel_by_Hieronymus_Bosch_T34.jpg",
+		"The_Girl_With_A_Pearl_Earring_by_Johannes_Vermeer.jpg",
+		"The_Gleaners_by_Jean-Francois_Millet.jpg",
+		"The_Grand_Odalisque_by_Jean_Auguste_Dominique_Ingres_F91.jpg",
+		"The_Great_Wave_Off_Kanagawa_by_Katsushika_Hokusai_Q50.jpg",
+		"The_Gross_Clinic_by_Thomas_Eakins_N38.jpg",
+		"The_Happy_Accidents_Of_The_Swing_by_Jean-Honore_Fragonard_S7.jpg",
+		"The_Hay_Wain_by_John_Constable_Z55.jpg",
+		"The_Hireling_Shepherd__by_William_Holman_Hunt_V34.jpg",
+		"The_Japanese_Bridge_by_Claude_Monet_S92.jpg",
+		"The_Kiss_by_Francesco_Hayez_L46.jpg",
+		"The_Kiss_by_Gustav_Klimt.jpg",
+		"The_Ladies_Waldegrave_by_Joshua_Reynolds_O12.jpg",
+		"The_Lady_Of_Shalott_by_John_William_Waterhouse_V45.jpg",
+		"The_Lady_With_The_Ermine_by_Leonardo_Da_Vinci_P69.jpg",
+		"The_Last_Supper_by_Leonardo_Da_Vinci_E69.jpg",
+		"The_Laughing_Cavalier_by_Frans_Hals_G38.jpg",
+		"The_Liberty_Leading_The_People_by_Eugene_Delacroix.jpg",
+		"The_Luncheon_On_The_Grass_by_Edouard_Manet_D60.jpg",
+		"The_Night_Cafe_by_Vincent_Van_Gogh.jpg",
+		"The_Night_Watch_by_Rembrandt_M29.jpg",
+		"The_Ninth_Wave_by_Ivan_Aivazovsky_M94.jpg",
+		"The_Oath_Of_Horatii_by_Jacques-Louis_David_K39.jpg",
+		"The_Pont_Du_Gard_by_Hubert_Robert.jpg",
+		"The_Potato_Eaters_by_Vincent_Van_Gogh.jpg",
+		"The_Raft_Of_The_Medusa_by_Theodore_Gericault_I70.jpg",
+		"The_Scream_by_Edvard_Munch.jpg",
+		"The_Seed_Of_Areoi_by_Paul_Gauguin_Z97.jpg",
+		"The_Sleepers_by_Gustave_Courbet.jpg",
+		"The_Sleeping_Gypsy_by_Henri_Rousseau.jpg",
+		"The_Starry_Night_by_Vincent_Van_Gogh.jpg",
+		"The_Storm_On_The_Sea_Of_Galilee_by_Rembrandt_F63.jpg",
+		"The_Third_Of_May_1808_by_Francisco_Goya_H39.jpg",
+		"The_Tower_Of_Babel_by_Pieter_Bruegel_The_Elder_W1.jpg",
+		"The_Triumph_Of_Galatea_by_Raphael_H76.jpg",
+		"The_Wanderer_Above_The_Sea_Of_Fog_by_Caspar_David_Friedrich.jpg",
+		"The_Wedding_At_Cana_by_Paolo_Veronese_F69.jpg",
+		"View_Of_Toledo_by_El_Greco_C24.jpg",
+		"Washington_Crossing_The_Delaware_by_Emanuel_Gottlieb_Leutze_J38.jpg",
+		"Watson_And_The_Shark_by_John_Singleton_Copley_S96.jpg",
+		"Wave_by_William-Adolphe_Bouguereau_O33.jpg",
+	];
+
+	function addThumbnail(image) {
+		if(!image) {
+			return;
+		}
+
+		thumbnail = document.createElement('img');
+		thumbnail.addEventListener('load', () => addThumbnail(images.shift()));
+		thumbnail.src = image;
+		thumbnail.addEventListener('click', e => img.src = e.target.src);
+		thumbnails.appendChild(thumbnail);
+	}
+
+	image = images.shift();
+	img.addEventListener('load', update);
+	img.src = image;
+	addThumbnail(image)
+</script>
+</html>

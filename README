@@ -1,0 +1,2 @@
+rsync -a is.ivbar.com:/usr/local/ivbar/jenkins/jobs/era-master . --exclude=archive
+python fails.py

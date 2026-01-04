@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Björklunden</title>
+</head>
+<style>
+	.content, .gallery, .thumbnails {
+		display: flex;
+	}
+	.content {
+		justify-content: center;
+	}
+	.gallery {
+		flex-direction: column;
+		width: 1727px;
+	}
+	.thumbnails div img {
+		width: 100%;
+		height: 100%;
+		border-top: 5px solid white;
+		border-bottom: 5px solid white;
+	}
+	.thumbnails div.current img {
+		border-top: 5px solid hotpink;
+		border-bottom: 5px solid hotpink;
+	}
+</style>
+<body>
+	<div class=content>
+		<div class=gallery>
+			<div class=main>
+				<div><img id=gallery src="img01.jpg" draggable="false"></div>
+			</div>
+			<div class=thumbnails id=thumbnails draggable="false">
+				<div class=current><img src='img01.jpg'></div>
+				<div><img src='img02.jpg' draggable="false"></div>
+				<div><img src='img03.jpg' draggable="false"></div>
+				<div><img src='img04.jpg' draggable="false"></div>
+				<div><img src='img05.jpg' draggable="false"></div>
+				<div><img src='img06.jpg' draggable="false"></div>
+				<div><img src='img07.jpg' draggable="false"></div>
+				<div><img src='img08.jpg' draggable="false"></div>
+				<div><img src='img09.jpg' draggable="false"></div>
+				<div><img src='img10.jpg' draggable="false"></div>
+				<div><img src='img11.jpg' draggable="false"></div>
+				<div><img src='img12.jpg' draggable="false"></div>
+				<div><img src='img13.jpg' draggable="false"></div>
+			</div>
+		</div>
+	</div>
+</body>
+<script>
+	const numImages = thumbnails.children.length;
+
+	let drag = false;
+	let dragStart = 0;
+	let currentImage = 0;
+
+	function left() {
+		currentImage--;
+		if(currentImage < 0) {
+			currentImage = 0;
+		}
+		render();
+	}
+
+	function right() {
+		currentImage++;
+		if(currentImage > numImages - 1) {
+			currentImage = numImages - 1;
+		}
+		render();
+	}
+
+	function move(e) {
+		let dx = e.clientX - dragStart;
+		if(dx > 50) {
+			dragStart = e.clientX;
+			right();
+		}
+		if(dx < -50) {
+			dragStart = e.clientX;
+			left();
+		}
+	}
+
+	function render() {
+		[].forEach.call(thumbnails.children, child => child.classList.remove('current'));
+		const currentThumbnail = thumbnails.children[currentImage % numImages];
+		gallery.src = currentThumbnail.children[0].src;
+		currentThumbnail.classList.add('current');
+	}
+
+	gallery.addEventListener('mousedown', e => { drag = true; dragStart = e.clientX; });
+	gallery.addEventListener('mouseup', () => { drag = false; });
+	gallery.addEventListener('mouseleave', () => { drag = false; });
+	gallery.addEventListener('mousemove', e => { if(drag) { move(e); } });
+	const images = thumbnails.querySelectorAll('img');
+	[].forEach.call(images, (image, i) => {
+		image.addEventListener('mousemove', e => {
+			currentImage = i;
+			render();
+		});
+	});
+
+	document.body.addEventListener('keydown', e => {
+		if(e.keyCode === 37) {
+			left();
+		}
+		if(e.keyCode === 39) {
+			right();
+		}
+	});
+</script>
+</html>

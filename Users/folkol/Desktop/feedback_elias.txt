@@ -1,0 +1,199 @@
+# HRM
+
+- Sparsmakad README!
+- Konstiga filnamn, se https://www.python.org/dev/peps/pep-0008/#package-and-module-names
+- Maffigt directory. Tog en stund att clona med skogs-internet.
+- Skulle vara nice med ett litet Glossary (OCR etc, fick googla lite termer)
+- ExtractTest vs ExtractText. Jag fick fan läsa både två och tre gånger innan jag fattade vad skillnaden var :) (tester för modulen extract_text.py brukar finnas i test_extract_text.py eller extract_text_test.py)
+
+## Code Description.docx:
+
+- Python-nomenklatur: ExtractText.py är inte en klass, det är en "modul" eller "script"
+- Filen slutar lite väl abrupt!
+
+## ExtractText.py
+
+- Som nämnt tidigare så har den inte ett "Pythonsk" namn. Jag hade nog döpt den till extract.py eller liknande.
+- Du har en funktion som heter "__init__()", detta är konstigt/ovanligt. Jag gissar att du har blandat ihop (eller tagit inspiration av?) klassers "dunder init" __init__(self). Jag hade kallat funktionen "main" istället (eller bara inlinat den i main-if-satsen).
+- Flera funktioner som ligger i global scope används bara inuti andra funktioner (och verkar inte heller vara tänka att exporteras), lägg dem gärna i den funktionen isf.
+
+### trim_special_characters
+
+- I Python så brukar man skriva kommentarer inuti funktionen/klassen etc. Se https://www.python.org/dev/peps/pep-0257/
+- Jag fattar inte varför du tar bort innandömet i ett ord ifall det börjar med en punkt. Exempel: '.foobar' -> '.r' (if word[0] == '.': word = word[:1] + word[len(word) - 1:])
+- "special characters" brukar normalt inte innefatta normala bokstäver. Jag hade valt ett annat namn, kanske "extract_number" eller liknande.
+- Alternativa implementationer (om man bortser från if-satsen som tar bort innanmätet)
+def trim_special_characters(word): return ''.join(c for c in word if c.isdigit() or c in '.%')
+def trim_special_characters(word): return re.sub('[^0-9.%]', '', word)
+
+### extract_info_vertical
+
+- Att skicka in en lista av listor som muteras är ovanligt / förvånande och error prone.
+- Se docstring-kommentar ovan.
+- Här dupliceras listorna från __init__. Lägg dem som konstakter i modul-global scope?
+- kodblocket till for "i, word in enumerate(words):" är lite grötigt, tar en stund att läsa vad den gör.
+- Här tas '%' bort. Behövd det någon annan stans eller borde det tas bort direkt i trim_special_characters?
+- Funktionskroppen är ganska stor, den borde nog formuleras om eller brytas ner i delfunktioner.
+
+### add_word_vertical
+
+- Oftast så använder man sällan split(' ') med ett explicit mellanslag. Se https://docs.python.org/2/library/stdtypes.html#str.split
+- funktionsnamnet verkar inte återspegla vad funktionen gör, vilket vad jag kan se är att lägga till words splittade från raden ifall det inte avbryts p.g.a. exception p.g.a. float.
+- Det kan vara förvirrande med funktioner som använder sidoeffekter som floats raise ValueError för flödeskontroll, speciellt om sagda flödeskontroll sträcker sig utanför funktionen.
+
+### reconstruct_line
+
+- Samma angående docstring.
+- (Då den jobbar på en lista av words så borde nog docstringen dessutom vara ['6', '%', '471', '28'] -> ['6%', '471', '28'] för att förtydliga.)
+- Namnet känns lite för generellt. Den borde heta något som säger att den mergar % med tidigare tal eller något.
+- Parametern borde nog heta "words" eller liknande?
+- Alternativ implementation:
+line = []
+for word in words:
+    if word == '%':
+            line[-1] += '%'
+    else:
+            line.append(word)
+return line
+
+### extract_info_chunks
+
+- Samma med list av "output-listor"
+- Samma med docstrings.
+- Samma med globala CONSTANTS.
+- Funktionen känns lite lång. Borde nog formuleras om eller brytas ner i delfunktioner.
+- Substitutions-logiken refererar till index i listor, vilket inte är så pythonskt.
+- Alternativ implementation:
+substitutions = {
+	'ex moms': 'netto',
+	'bel moms': 'moms'
+}
+for word, substitute in substitutions.items():
+	line = line.replace(word, substitute)
+- Alternativ implementation av "att ta bort tomma strängar" (kallas "list comprehension"):
+splitted = [part for part in splitted if part != '']
+(- Ett ännu bättre alternativ är att använda .split() istället för .split(' '), se ovan.)
+- efter att ha anropat reconstruct_line för att slå samman ord med '%' så rensas '%', känns som att gå över ån efter vatten!
+
+### extract_date
+
+- docstring
+- placeholder.__contains__(sub) brukar normalt sett skrivas 'sub in placeholder'
+- word = str.split + for sub in word borde kanske vara words = str.split, for word in words, eller kanske direkt for word in str.split.
+- extract_date kan råka ta ut andra saker som har / och - i sig. T.ex. "foob/ar/bz" eller "--foobar"
+- kanske bättre att använda regex för att hitat något som matchar pattern mer exakt?		
+
+### similar
+
+- docstring
+
+### find_similar
+
+- docstring (also: "in a map" should probably be "in a dict" or "stores a mapping")
+
+### get_most_probable
+
+- docstring
+- alternativ implementation är att använda builtin "max" för att hitta största nyckeln:
+def get_most_probable(word_map):HHHHH
+	return word_map[max(word_map)]
+
+### update_text
+
+- docstring
+- alternativ implementation (utan att ha läst så noga vad den inre loopen gör...)
+def update_text(old, new, text):
+	return [line.replace(old, new) for line in text]
+
+### auto_update_most_probable
+
+- docstring!
+(- Docstringen behöver inte återupprepa implementationen, det är vad koden är till för!)
+
+### fill_in_the_blanks
+
+- docstring
+- Funktionen har samma förvirrande API som tidigare (med en lista av retur-listor), om du nu vill göra på det sättet så borde den ta de enskilda listorna istället "def fill_in_the_blanks(total, netto...)"
+- Funktionen är lite för lång, borde formuleras om eller brytas ner för att man ska kunna få överblick av vad den gör på ett smidigt sätt.
+- "fill_in_the_blanks" är lite konstigt namn, kanske borde heta "calculate_missing" eller något.
+
+### control_values
+
+- Docstring! :)
+- Samma här angående parametrarna.
+
+### __init__
+
+- mode 'r' är default, och behöver inte anges explicit. Se: https://docs.python.org/3/library/functions.html#open
+- Istället för open och sedan en close så kan man använda sig av en Context Manager som gör close automatiskt, se: https://www.python.org/dev/peps/pep-0343/#motivation-and-summary.
+- str.split har ett andra argument som heter "maxsplit", det behöver man inte ange ifall man vill splitta allt.
+- Listor av ord som t.ex. keywords_total kan ofta vara lättare att läsa ifall man formaterar dem så här:
+keywords_total = [
+    'summa',
+    'total',
+    'att betala',
+    'at betala',
+    'totalt',
+    'totalt:',
+    'subtotal',
+    'kontant',
+    'belopp',
+    'pris',
+    'totalt sek',
+    'total sek',
+    'totalt (sek):',
+    'sek',
+    'duo/fam enkel'
+]
+- Att konstruera en lista genom att lägga till allt från andra listor kan göras lite mer elegant med .extend eller med "unpacking":
+
+keys = []
+keys.extend(keywords_total)
+keys.extend(keywords_moms_percent)
+...
+
+keys = [*keywords_total, *keywords_moms_percent, ...]
+- "pass" behövs bara i annars tomma kodblock. Finns det något annat i kodblocket så gör den ingen nytta.
+- en "placeholder" brukar vara en temporär sak som är tänkt att bytas ut, i det här fallet så verkar det snarare vara "en plats att lägga saker i". Detta brukar snarare callas "accumulator" eller "container".
+- Smått förvirrande loop som anropar fill_in_the_blanks. Inte helt uppenbart från __init__ varför den behöver loopa en gång per placeholder.
+- Lite ovanligt att man har en lista av listor, som man sedan explicit refererar till de inre listorna på (t.ex. när du printar placeholder[1] etc). Jämför print('total:', placeholders[0]) med print('total:', total).
+- Förvirrande API när en funktion tar listor som den ska populera. (Speciellt om den inte heter "populate list" eller liknande). Jag hade gjort ett annat API som t.ex. hade returnerat listan eller dylikt.
+- fill_in_the_blanks returnerar något, men det fångas aldrig.
+
+## ExtractTest
+
+- setup verkar misstänkt snarlik __init__ från ExtractText. Kanske hade det gått att återanvända denna? (Det hade varit tydligare vad testet hade gjort också. Ett unittest består ofta av "setup", "test", "asserts", ditt har bara "setup" och "asserts" – oklart vad det är som testas.)
+- Flera kommentarer som i princip bara återupprepar vad koden säger. Vill man ha ett namn på ett kodstycke så är det ofta bättre att bryta ut det till en funktion.
+- Svårt att se vad t.ex. p[0][1] är, kanske hade varit tydligare att använda namn på "delarna av p" istället för att använda index?
+
+## OCRTest
+
+- Jag vet inte vad som är så mkt "Test" i denna. Verkar snarae vara just "utför OCR"?
+- Kommentarer som återupprepar kod igen. Låt koden dokumentera sig själv med väl valda variabelnamn istället!
+
+Exempel 1:
+# Credentials from local JSON file
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:\Google_Cred\ocr-ex-jobb-519e7b34d2e6.json"
+
+Exempel 2:
+# Instantiates a client
+client = vision.ImageAnnotatorClient()
+
+- io.open är samma som builtin open, i alla fall i Python 3.
+- write_to_file tar en text sträng, inte en lista av ord. Så "for word in text" loopar egentligen över bokstäverna i strängen. Man kan skriva en hel textsträng direkt.
+- I allmänhet så kan man formulera om koden så att den gör samma sak med lite färre ord. Då är det lättare att se vad som händer.
+- Exempel:
+image_name = 'buss0_sharp'
+
+with open(f'processed_images/{image_name}.jpg', 'rb') as f:
+    image = vision.types.Image(content=(f.read()))
+
+response = client.text_detection(image=image)
+text = response.text_annotations[0].description
+
+with open(f'responses/{image_name}.txt', 'w+') as f:
+    f.write(text)
+
+## SandBox.py
+
+- Ett tips för att slippa använda filer för såna här sorts tester är att ha en terminal med IPython i ett annat fönster, eller använda "Python Console" i PyCharm. (Konceptet brukar kallas REPL.)

@@ -1,0 +1,280 @@
+<html>
+  <meta charset="UTF-8">
+  <head>
+    <title>Minetrap</title>
+    <style>
+      .cell {
+      display: inline-block;
+      position: relative;
+      margin: 0px;
+      width: 32px;
+      height: 32px;
+      box-sizing: border-box;
+      }
+
+      .mud {
+      background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABmJLR0QAhABAABmp1IgtAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4wwKEzEALnTUcgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAALbSURBVHja7ZvbisIwEIa7dXpTPIDgxb7NPty+7YLgKt4U2b1KiUMOk+RPmlgDi1RtO+f5MnU/vr8+/7oVr74lYY/TpTtOl7YNEKuEOuc8HKDyEH/jup2ejne3Aaa4WjFKpCjuMh6ZTkApHaqAMv59fHRd13XjfTPLoz4Llc0XOVRC+ZCl7q9er9spWnmJ8aspgkpJ/rq7DfMfX5v9KVh5fk51XUBXVve+aT1+f4Kvz8/pa1Q8NRUlkdEEB9hCP9TLLoM0BUKxy5UqqzBAUAooUkMjZy3L2wXOwwGOmzWnw+pTgGyU5YuCzf5kLS6m3m2r5q7roCHLJEMf2299Qkuvm0t5BVEukHraC1y3E2wfwHl+yT2FKyrnGhALHMhqnOrpEIPo3++XEj4l9E3hLTUENwKhhU8dfKQUNFvI8+/qx4QWUCmdC6RsinPv38dHN943XkNRrhwvDVM+w9g+9xqAe7IVSpSO0agWT+aY+ko6Gy3tKR5hucbf1RrApCjfjerfQaMz1Zi/Lu+j0ZlKb1ByPXiBDUS4lVHIyluSbfKLvB8kBZCR4CKy3LvDoAhY1UCktjZYGrSo1CamFmS2poAS5JUHou8a4KsBOX6EEIO2KFaQ1BdC57JpDhBqWBQc6fe1zSeyDURawWsKDcml0TWUOGEcoA8YEAu93zDJJnEcSS+mXyS1SOnK+wwh5ZPYyIz+lVhKKugK25QvBWaLobDP81VPhHTvx7J86V1fFhLUIadVhE5KAa50aSMgoKt4DfB1mNLQJTYAsm/XBFPiGlBL0eJO0V8Xa4M2MDIhqe05fcoPIlOc06NDWiFzCI+npkS2CAjZy8cqzqMnhiukEWCiS5KeKDUCqiCeh8P8iAzVXoMHIkvAjX5PxP193evlZ4K+9HgPRWsUSlV1l/dQg9Me2VKQYSup7PwhK8QANRKfhD1ijUCt5ayNM/ixlCeaM4A016Ut9P0vM2s3wD9J2bfBI02aTAAAAABJRU5ErkJggg==');
+      background-size: 64px;
+      }
+
+      .fog {
+      background-color: rgb(21, 5, 0);
+      }
+
+      .fog_l { border-left:   8px solid rgb(70, 29, 9); }
+      .fog_r { border-right:  8px solid rgb(70, 29, 9); }
+      .fog_t { border-top:    8px solid rgb(70, 29, 9); }
+      .fog_b { border-bottom: 8px solid rgb(90, 46, 25); }
+
+      .entity {
+      font-size: 32px;
+      display: table-cell;
+      position: absolute;
+      left: 0px;
+      width: 32px;
+      height: 32px;
+      text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game" tabindex="1" v-on:keydown.left="move_left" v-on:keydown.right="move_right" v-on:keydown.up="move_up" v-on:keydown.down="move_down" style="width: 1312px; height: 1312px" v-focus>
+      <div v-for="row in field">
+        <template v-for="cell in row">
+          <div v-bind:class="'cell ' + (cell.fog ? 'fog' : 'mud')"
+               v-bind:style="'background-position: bottom ' + ((cell.y % 16) * 32) + 'px right ' + ((cell.x % 16) * 32) + 'px;'">
+
+            <template v-if="!cell.fog">
+              <svg v-if="cell.mine" class="entity" height="32" width="32">
+                <circle cx="16" cy="16" r="14" style="stroke: none; fill: #502a08"/>
+                <polygon style="fill:yellow; stroke:red; stroke-width:2"
+                         points="31,23 18,19 13,32 13,18 0,17 13,13 10,0 17,10 29,3 21,14"/>
+              </svg>
+
+              <span v-else-if="pos.x==cell.x && pos.y==cell.y && cell.heat" class="entity"
+                    v-bind:style="'color: '+heat_color(cell.heat)">{{ cell.heatchar }}</span>
+            </template>
+
+            <div v-if="cell.fog && cell.classes" v-bind:class="'cell ' + cell.classes">
+            </div>
+
+            <svg v-if="(cell.x == pos.x-1 && cell.y == pos.y) ||
+                       (cell.x == pos.x+1 && cell.y == pos.y) ||
+                       (cell.x == pos.x && cell.y == pos.y-1) ||
+                       (cell.x == pos.x && cell.y == pos.y+1) ||
+                       (cell.x == pos.x && cell.y == pos.y)"
+                 v-on:click="move(cell.x - pos.x, cell.y - pos.y)" width="32" height="32" style="position:absolute; left: 0px;">
+              <rect width="32" height="32" style="stroke: #a00; fill:none;stroke-width:3"/>
+            </svg>
+          </div>
+        </template>
+        <br/>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script>
+function reveal(pos) {
+    var visited = Array.apply(null, Array(game.height)).map(function(){
+        return Array.apply(null, Array(game.width)).map(function(){ return false; })
+    });
+
+    var open = [pos];
+    while(open.length) {
+        pos = open.pop()
+        visited[pos.y][pos.x] = true;
+        if(!game.field[pos.y][pos.x].fog) {
+            continue;
+        }
+        game.field[pos.y][pos.x].fog = false;
+        if(game.field[pos.y][pos.x].heat) {
+            continue;
+        }
+
+        for(var yn = Math.max(pos.y-1, 0); yn <= Math.min(pos.y+1, game.height - 1); ++yn) {
+            for(var xn = Math.max(pos.x-1, 0); xn <= Math.min(pos.x+1, game.width - 1); ++xn) {
+                if(pos.x == xn && pos.y == yn || visited[yn][xn]) {
+                    continue;
+                }
+                open.push({x: xn, y: yn});
+            }
+        }
+    }
+
+    calc_fog_border();
+}
+
+function calc_fog_border() {
+    var w = game.width - 1;
+    var h = game.height - 1;
+
+    for(var y = 0; y < game.height; ++y) {
+        for(var x = 0; x < game.width; ++x) {
+            classes = '';
+            if(game.field[y][x].fog) {
+                if(x > 0 && !game.field[y][x-1].fog) { classes += 'fog_l '; }
+                if(y > 0 && !game.field[y-1][x].fog) { classes += 'fog_t '; }
+                if(x < w && !game.field[y][x+1].fog) { classes += 'fog_r '; }
+                if(y < h && !game.field[y+1][x].fog) { classes += 'fog_b '; }
+            }
+            game.field[y][x].classes = classes;
+        }
+    }
+}
+
+function move(xofs, yofs) {
+    if(!game.active) {
+        return;
+    }
+
+    var new_pos = {
+        x: game.pos.x + xofs,
+        y: game.pos.y + yofs,
+    };
+
+    if(new_pos.x < 0 || new_pos.y < 0 || new_pos.x >= game.width || new_pos.y >= game.height) {
+        game.win = true;
+        game.active = false;
+        game.$forceUpdate();
+        alert('You made it out of the mine field.');
+        return;
+    }
+
+    if(game.field[new_pos.y][new_pos.x].mine) {
+        for(var y = 0; y < game.height; ++y) {
+            for(var x = 0; x < game.width; ++x) {
+                if(game.field[y][x].mine) {
+                    game.field[y][x].fog = false;
+                }
+            }
+        }
+        calc_fog_border();
+
+        game.active = false;
+        game.alive = false;
+        game.$forceUpdate();
+        alert('You stepped on a landmine.')
+        return;
+    }
+    else if(game.field[new_pos.y][new_pos.x].fog) {
+        reveal(new_pos)
+    }
+
+    game.pos = new_pos;
+}
+
+
+function generate() {
+    game.field = Array.apply(null, Array(game.height)).map(function(){
+        return Array.apply(null, Array(game.width)).map(function(){ return 1; })
+    });
+    for(var y = 0; y < game.height; ++y) {
+        for(var x = 0; x < game.width; ++x) {
+            game.field[y][x] = {
+                mine: false,
+                fog: true,
+                x: x,
+                y: y,
+                heat: 0,
+            };
+        }
+    }
+
+    var mines = [];
+    for(y = 0; y < game.height; ++y) {
+        for(x = 0; x < game.width; ++x) {
+            if(Math.abs(x-game.pos.x) + Math.abs(y-game.pos.y) < 2) {
+                continue;
+            }
+            mines.push([x,y]);
+        }
+    }
+
+    while(mines.length > game.mines) {
+        mines.splice(Math.floor(Math.random() * mines.length), 1);
+    }
+
+    mines.forEach(function(p) { game.field[p[1]][p[0]].mine = true; });
+
+    var heatmap = {
+        0: '',
+        1: '⚀',
+        2: '⚁',
+        3: '⚂',
+        4: '⚃',
+        5: '⚄',
+        6: '⚅',
+        7: '☠',
+        8: '8',
+    };
+    for(y = 0; y < game.height; ++y) {
+        for(x = 0; x < game.width; ++x) {
+            var heat = 0;
+            for(var yn = Math.max(y-1, 0); yn <= Math.min(y+1, game.height - 1); ++yn) {
+                for(var xn = Math.max(x-1, 0); xn <= Math.min(x+1, game.width - 1); ++xn) {
+                    if(x == xn && y == yn) {
+                        continue;
+                    }
+                    if(game.field[yn][xn].mine) {
+                        ++heat;
+                    }
+                }
+            }
+            game.field[y][x].heat = heat;
+            game.field[y][x].heatchar = heatmap[heat];
+        }
+    }
+
+    reveal(game.pos);
+    reveal({x: game.pos.x - 1, y: game.pos.y});
+    reveal({x: game.pos.x + 1, y: game.pos.y});
+    reveal({x: game.pos.x, y: game.pos.y - 1});
+    reveal({x: game.pos.x, y: game.pos.y + 1});
+}
+
+
+var game = new Vue({
+    el: '#game',
+    data: {
+        active: true,
+        alive: true,
+        win: false,
+        pos: {x: 20, y: 20},
+        width: 41,
+        height: 41,
+        mines: 40*40 / 4,
+        field: [
+            //[{mine: bool, fog: bool, heat: count, x: 0, y: 0}, ...],
+        ],
+    },
+    methods: {
+        move:  move,
+        move_left:  function(event) { event.preventDefault(); move(-1,  0); },
+        move_right: function(event) { event.preventDefault(); move( 1,  0); },
+        move_up:    function(event) { event.preventDefault(); move( 0, -1); },
+        move_down:  function(event) { event.preventDefault(); move( 0,  1); },
+        heat_color: function(heat) {
+            var colors = [
+                'rgb(130,175,21)',
+                'rgb(200,162,24)',
+                'rgb(255,1,1)',
+                'rgb(133,0,255)',
+                'rgb(0,43,255)',
+                'rgb(133,0,255)',
+                'rgb(255,0,235)',
+                'rgb(255,0,235)',
+            ];
+            return colors[heat-1];
+        },
+    },
+    directives: {
+        focus: {
+            inserted: function (el) {
+                el.focus();
+            },
+        },
+    },
+});
+
+generate();</script>
+  </body>
+</html>

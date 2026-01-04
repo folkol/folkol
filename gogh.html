@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Colorwheel Histogram</title>
+	<meta name='viewport' content='width=device-width, user-scalable=no'/>
+	<style type="text/css">
+		img {
+			height: 500px;
+			width: auto;
+		}
+		div.gallery * {
+			display: inline-block;
+		}
+		#thumbnails img {
+			height: 100px;
+			width: auto;
+			display: inline-block;
+		}
+	</style>
+</head>
+<body>
+	<div class=gallery>
+		<div id=frame></div>
+		<img id=img src="">
+	</div>
+	<div id=thumbnails></div>
+</body>
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/105/three.min.js'></script>
+
+<script>
+	var scene, renderer, camera, animation, colorwheel, previousRotation = rotation = 0;
+
+	function render() {
+		if(rotation) {
+			colorwheel.rotation.y = rotation / 100;
+		}
+		renderer.render(scene, camera);
+	}
+
+	function init (size) {
+		renderer = new THREE.WebGLRenderer();
+		renderer.setPixelRatio(window.devicePixelRatio);
+		renderer.setSize( size, size );
+		frame.appendChild( renderer.domElement );
+
+		var dragStart = undefined;
+
+		function stopRotation(e) {
+			dragStart = undefined;
+			previousRotation = rotation;
+		}
+
+		function updateRotation(screenX) {
+			if(dragStart) {
+				rotation = previousRotation + (screenX - dragStart);
+				render();
+			}
+		}
+
+		frame.addEventListener('mousedown', e => dragStart = e.screenX);
+		frame.addEventListener('touchstart', e => dragStart = e.touches[0].screenX);
+		window.addEventListener('mouseup', stopRotation);
+		window.addEventListener('mouseout', stopRotation);
+		window.addEventListener('touchend', stopRotation);
+		frame.addEventListener('mousemove', e => updateRotation(e.screenX));
+		frame.addEventListener('touchmove', e => updateRotation(e.touches[0].screenX));
+	}
+
+	function update() {
+		scene = new THREE.Scene();
+		camera = new THREE.PerspectiveCamera(50, 1, 1, 100 );
+		camera.position.set( 0, 15, 20);
+		camera.lookAt(0, 0, 0);
+		camera.aspect = 1;
+		camera.updateProjectionMatrix();
+
+		function createHistogram(img) {
+			function rgb2hsl(r, g, b) {  // https://gist.github.com/mjackson/5311256
+				r /= 255, g /= 255, b /= 255;
+
+				var max = Math.max(r, g, b), min = Math.min(r, g, b);
+				var h, s, l = (max + min) / 2;
+
+				if (max == min) {
+				    h = s = 0; // achromatic
+				} else {
+					var d = max - min;
+					s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+					switch (max) {
+						case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+						case g: h = (b - r) / d + 2; break;
+						case b: h = (r - g) / d + 4; break;
+					}
+
+					h /= 6;
+				}
+
+				return [ h, s, l ];
+			}
+
+			function clipped(r, g, b) {
+				return r < 5 && g < 5 && b < 5 || r > 250 && g > 250 && b > 250;
+			}
+
+			var buckets = [
+				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+			];
+
+			var canvas = document.createElement('canvas');
+		    var ctx = canvas.getContext("2d");
+		    canvas.width = img.width;
+		    canvas.height = img.height;
+		    ctx.drawImage(img, 0, 0);
+		    var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+		    var data = imgData.data;
+
+			for(i = 0; i < data.length; i+=4) {
+		    	const [r, g, b] = data.slice(i, i + 4);
+
+		    	if(clipped(r, g, b)) {
+		    		continue;
+		    	}
+
+		    	const [h, s, l] = rgb2hsl(r, g, b);
+		    	var x = Math.floor(l * 6);
+		    	var y = Math.floor(h * 12)
+		    	buckets[x][y] += 1;
+		    }
+		    return buckets;
+		}
+
+	    function createColorwheel(buckets) {
+		    function createCell(h, ring, color) {
+				const geometry = new THREE.Geometry();
+
+				var k = Math.atan(Math.PI * 2 / 24);
+				geometry.vertices.push(new THREE.Vector3(-0.5, 0, -0.5 - (ring + 0) * k));
+				geometry.vertices.push(new THREE.Vector3( 0.5, 0, -0.5 - (ring + 1) * k));
+				geometry.vertices.push(new THREE.Vector3( 0.5, 0,  0.5 + (ring + 1) * k));
+				geometry.vertices.push(new THREE.Vector3(-0.5, 0,  0.5 + (ring + 0) * k));
+				geometry.vertices.push(new THREE.Vector3(-0.5, h, -0.5 - (ring + 0) * k));
+				geometry.vertices.push(new THREE.Vector3( 0.5, h, -0.5 - (ring + 1) * k));
+				geometry.vertices.push(new THREE.Vector3( 0.5, h,  0.5 + (ring + 1) * k));
+				geometry.vertices.push(new THREE.Vector3(-0.5, h,  0.5 + (ring + 0) * k));
+
+				// Bottom
+				geometry.faces.push( new THREE.Face3( 0, 1, 2 ) );
+				geometry.faces.push( new THREE.Face3( 2, 3, 0 ) );
+				// Up
+				geometry.faces.push( new THREE.Face3( 4, 7, 6 ) );
+				geometry.faces.push( new THREE.Face3( 6, 5, 4 ) );
+				// Inner
+				geometry.faces.push( new THREE.Face3( 0, 3, 7 ) );
+				geometry.faces.push( new THREE.Face3( 7, 4, 0 ) );
+				// Outer
+				geometry.faces.push( new THREE.Face3( 1, 5, 6 ) );
+				geometry.faces.push( new THREE.Face3( 6, 2, 1 ) );
+				// Right
+				geometry.faces.push( new THREE.Face3( 0, 4, 5 ) );
+				geometry.faces.push( new THREE.Face3( 5, 1, 0 ) );
+				// Left
+				geometry.faces.push( new THREE.Face3( 2, 6, 7 ) );
+				geometry.faces.push( new THREE.Face3( 7, 3, 2 ) );
+
+				geometry.computeFaceNormals();
+
+				return new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color: color}));
+			}
+
+		    var max = Math.max(...[].concat(...buckets));
+			const colorwheel = new THREE.Object3D();
+			for(j = 0; j < 6; j++) {
+				for(i = 0; i < 12; i++) {
+					const hue = 360/12.0 * i;
+					const saturation = 100;
+					const lightness = Math.floor(100/7 + 100/7 * j);
+
+					var h = 0.1 + 10 * Math.log(1 + buckets[j][i] / max);
+					const color = new THREE.Color(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
+					const cell = createCell(h, j, color);
+					cell.rotation.y = Math.PI * 2 / 12 * i;
+					cell.translateX(3 + j);
+					colorwheel.add( cell );
+				}
+			}
+
+			return colorwheel;
+		}
+
+		var buckets = createHistogram(img);
+		colorwheel = createColorwheel(buckets);
+		scene.add( colorwheel );
+
+		const spot = new THREE.DirectionalLight(0xFFFFFF, 1);
+		spot.position.set(25, 15, 25);
+		scene.add(spot);
+
+		scene.add( new THREE.AmbientLight( 0x606060 ) );
+
+		render();
+	}
+
+	init(500);
+
+	images = [  // http://images.vangoghmuseum.com/vincent-van-gogh/
+		"theo-van-gogh-1857-1891.jpg",
+		"vincent-van-gogh-at-the-age-of-13.jpg",
+		"vincent-van-gogh-at-the-age-of-19.jpg",
+		"self-portraits.jpg",
+		"self-portrait.jpg",
+		"wheatfield.jpg",
+		"the-sheaf-binder-after-millet.jpg",
+		"skull.jpg",
+		"self-portrait-with-straw-hat.jpg",
+		"self-portrait-with-pipe-and-straw-hat.jpg",
+		"self-portrait-with-pipe.jpg",
+		"self-portrait-with-glass.jpg",
+		"self-portrait-with-felt-hat.jpg",
+		"self-portrait-as-a-painter.jpg",
+		"seascape-near-les-saintes-maries-de-la-mer.jpg",
+		"portrait-of-etienne-lucien-martin.jpg",
+		"portrait-of-camille-roulin.jpg",
+		"letter-to-willemien-van-gogh-with-letter-sketches.jpg",
+		"letter-to-theo-van-gogh-with-letter-sketches-van-g.jpg",
+		"letter-to-theo-van-gogh-with-letter-sketches-post.jpg",
+		"letter-to-theo-van-gogh-with-letter-sketches-farm.jpg",
+		"letter-to-theo-van-gogh-with-letter-sketches-daubi.jpg",
+		"letter-to-theo-van-gogh-with-letter-sketches-churc.jpg",
+		"letter-to-theo-van-gogh-with-letter-sketch-the-rai.jpg",
+		"letter-to-theo-van-gogh-with-letter-sketch-sower-w.jpg",
+		"letter-to-theo-van-gogh-with-letter-sketch-pollard.jpg",
+		"houses-seen-from-the-back.jpg",
+		"avenue-of-poplars-in-autumn.jpg",
+		"a-pair-of-leather-clogs.jpg",
+		"a-crab-on-its-back.jpg",
+		"piles-of-french-novels.jpg",
+		"self-portrait-as-a-painter.jpg",
+		"quinces-lemons-pears-and-grapes.jpg",
+		"the-pink-orchard.jpg",
+		"the-langlois-bridge.jpg",
+		"the-sower.jpg",
+		"the-harvest.jpg",
+		"sunflowers.jpg",
+		"the-yellow-house-the-street.jpg",
+		"peach-tree-in-blossom.jpg",
+		"orchards-in-blossom-view-of-arles.jpg",
+		"field-with-irises-near-arles.jpg",
+		"small-pear-tree-in-blossom.jpg",
+		"ploughed-fields-the-furrows.jpg",
+		"the-sheepshearer-after-millet.jpg",
+		"the-garden-of-saint-pauls-hospital-leaf-fall.jpg",
+		"the-bedroom.jpg",
+		"gauguins-chair.jpg",
+		"wheatfield-with-a-reaper.jpg",
+		"irises.jpg",
+		"undergrowth.jpg",
+		"view-from-theos-apartment.jpg",
+		"head-of-a-prostitute.jpg",
+		"self-portrait-with-straw-hat.jpg",
+		"self-portrait.jpg",
+		"the-zouave.jpg",
+		"self-portrait-with-straw-hat-and-pipe.jpg",
+		"self-portrait.jpg",
+		"bank-of-the-seine.jpg",
+		"red-cabbages-and-onions.jpg",
+		"head-of-a-skeleton-with-a-burning-cigarette.jpg",
+		"the-cottage.jpg",
+		"boulevard-de-clichy.jpg",
+		"daubignys-garden.jpg",
+		"view-of-auvers.jpg",
+		"wheatfield-under-thunderclouds.jpg",
+		"landscape-at-twilight.jpg",
+		"bridge-in-the-rain-after-hiroshige.jpg",
+		"flowering-plum-orchard-after-hiroshige.jpg",
+		"courtesan-after-eisen.jpg",
+		"the-sower.jpg",
+		"la-crau-seen-from-montmajour.jpg",
+		"the-boulevard-de-clichy.jpg",
+		"pollard-birches.jpg",
+		"winter-garden.jpg",
+		"coke-factory-in-the-borinage.jpg",
+		"bridge-and-houses-on-the-corner-of-herengracht-pri.jpg",
+		"worn-out.jpg",
+		"gate-in-the-paris-ramparts.jpg",
+		"country-road.jpg",
+		"provencal-orchard.jpg",
+		"the-sower-after-millet.jpg",
+		"old-vineyard-with-peasant-woman.jpg",
+		"tracing-of-the-plum-tree-teahouse-at-kameido-of-hi.jpg",
+		"tracing-of-the-cover-of-paris-illustre-le-japon.jpg",
+		"the-kingfisher.jpg",
+		"portrait-of-jozef-blok.jpg",
+		"the-daughter-of-jacob-meyer-after-bargue-after-hol.jpg",
+		"birds-nests.jpg",
+		"the-potato-eaters.jpg",
+		"woman-sewing.jpg",
+		"shoes.jpg",
+		"the-hill-of-montmartre-with-stone-quarry.jpg",
+		"view-of-paris.jpg",
+		"impasse-des-deux-freres.jpg",
+		"montmartre-windmills-and-allotments.jpg",
+		"self-portrait-with-grey-felt-hat.jpg",
+		"in-the-cafe-agostina-segatori-in-le-tambourin.jpg",
+		"montmartre-behind-the-moulin-de-la-galette.jpg",
+		"garden-with-courting-couples-square-saint-pierre.jpg",
+		"carafe-and-dish-with-citrus-fruit.jpg",
+		"weaver.jpg",
+		"peasant-woman-lifting-potatoes.jpg",
+		"three-cicadas.jpg",
+		"portrait-of-pere-tanguy.jpg",
+		"barn-owl-viewed-from-the-side.jpg",
+		"vestibule-in-the-asylum.jpg",
+		"four-swifts-with-landscape-sketches.jpg",
+		"mountain-landscape-behind-the-walled-wheatfield.jpg",
+		"view-of-royal-road-ramsgate.jpg",
+		"window-in-the-studio.jpg",
+		"the-rock-of-montmajour-with-pine-trees.jpg",
+		"head-of-a-woman.jpg",
+		"letter-to-theo-van-gogh-with-letter-sketch-head-of.jpg",
+		"tree-with-ivy-in-the-garden-of-the-asylum.jpg",
+		"tree-and-bushes-in-the-garden-of-the-asylum.jpg",
+		"landscape-with-houses.jpg",
+		"the-bedroom-enclosed-sketch-in-a-letter-written-to.jpg",
+		"in-front-of-the-embers.jpg",
+		"on-the-road.jpg",
+		"the-au-charbonnage-cafe.jpg",
+		"miners-in-the-snow-winter.jpg",
+		"orchard-in-blossom-with-two-figures-spring.jpg",
+		"head-of-a-woman.jpg",
+		"gardens-on-montmartre-and-the-blute-fin-windmill.jpg",
+		"garden-of-the-hospital.jpg",
+		"blossoming-peachtrees.jpg",
+		"studies-of-a-sower-and-of-a-hand.jpg",
+		"old-man-with-a-top-hat.jpg",
+		"garden-of-a-bathhouse.jpg",
+		"entrance-to-the-moulin-de-la-galette.jpg",
+		"woman-with-a-child-on-her-lap.jpg",
+		"women-working-on-the-peat-moor.jpg",
+		"apples.jpg",
+		"study-for-the-potato-eaters.jpg",
+		"self-portrait.jpg",
+		"flying-fox.jpg",
+		"still-life-with-earthenware-and-bottles.jpg",
+		"cypresses-and-two-women.jpg",
+		"dish-with-citrus-fruit.jpg",
+		"portrait-of-theo-van-gogh.jpg",
+		"self-portrait.jpg",
+		"wheatfield-with-crows.jpg",
+		"vase-with-gladioli-and-chinese-asters.jpg",
+		"pieta-after-delacroix.jpg",
+		"peasant-woman-binding-sheaves-after-millet.jpg",
+		"the-raising-of-lazarus-after-rembrandt.jpg",
+		"evening-after-millet.jpg",
+		"snow-covered-field-with-a-harrow-after-millet.jpg",
+		"almond-blossom.jpg",
+		"small-bottle-with-peonies-and-blue-delphiniums.jpg",
+		"sprig-of-flowering-almond-in-a-glass.jpg",
+		"cafe-table-with-absinthe.jpg",
+		"roses.jpg",
+		"butterflies-and-poppies.jpg",
+		"giant-peacock-moth.jpg",
+		"grapes.jpg",
+		"tree-roots.jpg",
+		"wheatfield-with-partridge.jpg",
+		"the-reaper-after-millet.jpg",
+		"the-vicarage-at-nuenen.jpg",
+		"portrait-of-gauguin.jpg",
+		"plaster-cast-of-a-womans-torso.jpg",
+		"self-portrait.jpg",
+		"head-of-a-woman.jpg",
+		"fishing-boats-on-the-beach-at-les-saintes-maries-d.jpg",
+		"congregation-leaving-the-reformed-church-in-nuenen.jpg",
+		"the-yellow-house-the-street.jpg",
+		"pollard-willow.jpg",
+		"still-life-with-bible.jpg",
+		"head-of-a-woman-1.jpg",
+		"head-of-a-woman-2.jpg",
+		"self-portrait-1.jpg",
+		"self-portrait-2.jpg",
+		"self-portrait-3.jpg",
+		"self-portrait-4.jpg",
+		"self-portrait-5.jpg",
+		"self-portrait-as-a-painter-1.jpg",
+		"self-portrait-with-straw-hat-1.jpg",
+		"the-sower-1.jpg",
+		"the-yellow-house-the-street-1.jpg",
+	];
+
+	function addThumbnail(image) {
+		if(!image) {
+			return;
+		}
+
+		thumbnail = document.createElement('img');
+		thumbnail.addEventListener('load', () => addThumbnail(images.shift()));
+		thumbnail.src = image;
+		thumbnail.addEventListener('click', e => img.src = e.target.src);
+		thumbnails.appendChild(thumbnail);
+	}
+
+	image = images.shift();
+	img.addEventListener('load', update);
+	img.src = image;
+	addThumbnail(image)
+</script>
+</html>

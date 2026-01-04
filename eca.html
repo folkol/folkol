@@ -1,0 +1,149 @@
+<!doctype html>
+<html>
+<head>
+    <title>Elementary cellular automaton</title>
+    <style>
+        table {
+            border: none;
+        }
+        table * {
+            margin: 0;
+            padding 0;
+        }
+        td {
+            border: 1px solid black;
+            width: 10px;
+            height: 10px;
+            padding: 0;
+            margin: 0;
+        }
+        td {
+            background-color: gray;
+        }
+    </style>
+</head>
+<body>
+    <form>
+        <label>Rule<input id=rule type=number min=0 max=255 value=30></label>
+        <label>Seed<input id=seed size=50 oninput="return handlers.update()"></label>
+        <button onclick="return simple_seed()">Reset seed</button>
+        <button onclick="return randomize_seed()">Randomize seed</button>
+        <button onclick="return randomize_rule()">Randomize rule</button>
+        <button id=go onclick="return handlers.go()">Go!</button>
+        <button onclick="return handlers.stop()">Stop</button>
+    </form>
+    <table id=grid></table>
+</body>
+<script>
+    let timer;
+    const WIDTH = 75,
+          HEIGHT = 50,
+          SEED = '1'.padStart(WIDTH/2, '0').padEnd(WIDTH, '0');
+
+    function init() {
+        for(let i = 0; i < HEIGHT; i++) {
+            let row = document.createElement('tr');
+            for(let j = 0; j < WIDTH; j++) {
+                let td = document.createElement('td');
+                row.appendChild(td);
+            }
+            window.grid.appendChild(row);
+        }
+
+        randomize_rule();
+        simple_seed();
+    }
+
+    function set_seed(seed) {
+        window.seed.value = seed;
+        repaint_grid_line(0, window.seed.value);
+    }
+
+    function repaint_grid_line(line, data) {
+        Array.prototype.forEach.call(window.grid.rows[line].cells, (cell, i) => {
+            cell.style.backgroundColor = data[i] == '1' ? 'white' : 'gray';
+        });
+    }
+
+    function clear_grid() {
+        window.grid.querySelectorAll('td').forEach(td => td.style.backgroundColor = 'gray');
+    }
+
+    function simple_seed() {
+        set_seed('1'.padStart(WIDTH/2, '0').padEnd(WIDTH, '0'))
+        handlers.stop();
+        return false;
+    }
+
+    function randomize_seed() {
+        let seed = '1'.repeat(WIDTH / 10) + '0'.repeat(WIDTH/10*9);
+        seed = seed.split('').sort(() => (Math.random()-0.5)).join('')
+        set_seed(seed);
+        return false;
+    }
+
+    function randomize_rule() {
+        window.rule.value = Math.ceil(Math.random() * 256);
+        return false;
+    }
+
+    let handlers = {
+        go: () => {
+            handlers.stop();
+            clear_grid();
+
+            let rule = parseInt(window.rule.value || 0);
+            let current_gen = window.seed.value;
+            let next_state = bit => (rule & (1 << bit)) ? '1': '0';
+            let transition_table = {
+                '111': next_state(7),
+                '110': next_state(6),
+                '101': next_state(5),
+                '100': next_state(4),
+                '011': next_state(3),
+                '010': next_state(2),
+                '001': next_state(1),
+                '000': next_state(0),
+            }
+
+            let generation = 0;
+            function update_grid() {
+                if(generation >= HEIGHT) {
+                    clearInterval(timer);
+                    return;
+                }
+                repaint_grid_line(generation, current_gen);
+                generation++;
+                let next_gen = [];
+                for(let i = 0; i < current_gen.length; i++) {
+                    let neighbourhood;
+                    if(i == 0) {
+                        neighbourhood = '0' + current_gen.slice(0, 2);
+                    }
+                    else if(i == current_gen.length - 1) {
+                        neighbourhood = current_gen.slice(i - 1, i + 1) + '0';
+                    }
+                    else {
+                        neighbourhood = current_gen.slice(i - 1, i + 2);
+                    }
+                    next_gen[i] = transition_table[neighbourhood];
+                }
+                current_gen = next_gen.join('');
+            }
+
+            timer = setInterval(update_grid, 1000/15);
+            return false;
+        },
+        stop: () => {
+            clearInterval(timer);
+            return false;
+        },
+        update: () => {
+            repaint_grid_line(0, window.seed.value);
+            return false;
+        }
+    };
+
+    init();
+</script>
+</html>

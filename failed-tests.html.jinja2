@@ -1,0 +1,38 @@
+<style>
+    table {
+        border-collapse: collapse;
+    }
+
+    td.missing {
+        color: lightgray;
+    }
+
+    td.failed {
+        background-color: lightgray;
+    }
+
+    tr:hover {
+        background-color: #ffff99;
+        background-color: papayawhip;
+    }
+
+    tr:hover > td.failed {
+        background-color: red;
+    }
+</style>
+
+<table border=1>
+    {% for test, builds in failed_tests.items() %}
+        <tr>
+            <td>{{ test | e }}</td>
+        {% for buildno in recent_builds %}
+            {% if buildno in builds %}
+                <td class="{{ 'success' if builds[buildno]['success'] else 'failed' }}" title="{{ builds[buildno]['title'] }})">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            {% else %}
+                <td class=missing title="Missing">@</td>
+            {% endif %}
+        {% endfor %}
+        </tr>
+    {% endfor %}
+</table>
+

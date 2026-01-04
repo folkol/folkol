@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Whiteboard</title>
+	<style>
+		html {
+			height: 100%;
+		}
+		body {
+			height: 100%;
+			margin: 0;
+		}
+		canvas {
+			width: 100%;
+			height: 100%;
+			box-sizing: border-box;
+			/*border: 20px solid black;*/
+			cursor: crosshair;
+		}	
+		aside {
+			position: absolute;
+			right: 0;
+			up: 0;
+		}
+	</style>
+
+</head>
+<body>
+	<!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Element/canvas -->
+	<aside id=log /></aside>
+	<canvas id=whiteboard width=1001 height=1001></canvas>
+</body>
+<script type="text/javascript">
+	var canvas = document.getElementById("whiteboard");
+	var ctx = canvas.getContext("2d");  // CanvasRenderingContext2D
+	ctx.fillStyle = 'rgb(100, 100, 100)'
+	ctx.lineCap = "round"
+	let drawing = false,
+		vx = 0,
+		vy = 0,
+		oldvx = 0,
+		oldvy = 0;
+
+	let conn;
+
+	canvas.addEventListener('mousedown', e => {
+		drawing = true;
+		oldvx = vx = e.offsetX / canvas.clientWidth;
+		oldvy = vy = e.offsetY / canvas.clientHeight;
+		ctx.fillRect(vx * 1001 - 0.5, vy * 1001 - 0.5,1,1);
+		ctx.beginPath();
+		ctx.lineTo(vx * 1001, vy * 1001);
+		ctx.stroke();
+		// conn.send({oldvx, oldvy, vx + 0.001, vy + 0.001})
+		// logger('mousedown')
+	});
+	canvas.addEventListener('mouseup', e => {
+		if(drawing) {
+			drawing = false;
+			vx = e.offsetX / canvas.clientWidth;
+			vy = e.offsetY / canvas.clientHeight;
+			ctx.lineTo(vx * 1001 - 0.5, vy * 1001 - 0.5);
+			// ctx.closePath();
+			ctx.stroke();
+			// conn.send({oldvx: oldvx, oldvy, vx: vx, vy + 0.001})
+			oldvx = vx;
+			oldvy = vy;
+		}
+		// logger('mouseup')
+	});
+	canvas.addEventListener('mouseleave', e => {
+		if(drawing) {
+			drawing = false;
+			vx = e.offsetX / canvas.clientWidth;
+			vy = e.offsetY / canvas.clientHeight;
+			ctx.lineTo(vx * 1001 - 0.5, vy * 1001 - 0.5);
+			// ctx.closePath();
+			ctx.stroke();
+			// conn.send({oldvx, oldvy, vx, vy + 0.001})
+			oldvx = vx;
+			oldvy = vy;
+		}
+		// logger('mouseleave')
+	});
+	canvas.addEventListener('mousemove', e => {
+		vx = e.offsetX / canvas.clientWidth;
+		vy = e.offsetY / canvas.clientHeight;
+		if(drawing) {
+			ctx.lineTo(vx * 1001, vy * 1001);
+			ctx.stroke();
+			peers.forEach(peer => peer.send(JSON.stringify({oldvx, oldvy, vx, vy})));
+			oldvx = vx;
+			oldvy = vy;
+		}
+		// logger('mousemove')
+	});
+</script>
+<script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+<script type="text/javascript">
+	var log = document.getElementById('log');
+	function logger(msg) {
+		console.log(msg)
+		let li = document.createElement('div')
+		let text = document.createTextNode(msg);
+		li.appendChild(text);
+		log.appendChild(li);
+		setTimeout(() => {
+			li.style.opacity = 0.5;
+		}, 4000)
+		setTimeout(() => {
+			log.removeChild(li);
+		}, 5000)
+
+		console.log(log.hasChildNodes(), log.childNodes.length)
+		while(log.hasChildNodes() && log.childNodes.length > 20) {
+			console.log(log.hasChildNodes(), log.childNodes.length)
+			log.removeChild(log.childNodes[0]);
+		}
+	}
+	const urlParams = new URLSearchParams(window.location.search);
+	// logger(`urlParams: ${urlParams}`);
+	const whiteboard_id = urlParams.get('whiteboard-id');
+	logger(`whiteboard_id: ${whiteboard_id}`);
+	let peers = [];
+
+	if(whiteboard_id) {
+		var peer = new Peer({
+			debug: 3,
+			reliable: true
+		}); 
+		peer.on('open', () => {
+			logger('open')
+			conn = peer.connect(whiteboard_id);
+			peers = [conn];
+			logger(`connecting to peer: ${whiteboard_id}`)
+			conn.on('open', function(conn){
+				logger(`connection opened to ${conn}`)
+				// conn.send('hi!');
+			});
+			conn.on('data', data => {
+				// logger(`got data ${data}`)
+				let {oldvx: rox, oldvy: roy, vx: rx, vy: ry} = JSON.parse(data);
+				ctx.beginPath()
+				ctx.moveTo(rox * 1001, roy * 1001);
+				ctx.lineTo(rx * 1001, ry * 1001);
+				ctx.stroke();
+				ctx.moveTo(oldvx, oldvy);
+			})
+		})
+
+		peer.on('connection', function(conn) {
+			logger(`peer connection opened with ${conn.id}`)
+		});
+		peer.on('call', call => logger(`got call: ${JSON.stringify(call)}`))
+		peer.on('close', close => logger(`got close: ${JSON.stringify(close)}`))
+		peer.on('disconnected', close => logger(`got disconnected: ${JSON.stringify(disconneted)}`))
+		peer.on('error', error => logger(`got error: ${JSON.stringify(error)}`))
+	} else {
+		peer = new Peer({
+			debug: 2,
+			reliable: true,
+		});
+
+		peer.on('open', function (id) {
+			logger("ID: " + peer.id);
+			let share = document.createElement('a');
+			let url = `https://folkol.com/whiteboard.html?whiteboard-id=${peer.id}`;
+			share.href = url;
+			share.title = 'Share whiteboard';
+			share.appendChild(document.createTextNode(url));
+			log.appendChild(share);
+		});
+		peer.on('connection', function (c) {
+			peers.push(c);
+			conn = c;
+			console.log(conn)
+			logger(`connection opened from `)
+			conn.on('data', function (data) {
+				// console.log('data', data)
+				let {oldvx: rox, oldvy: roy, vx: rx, vy: ry} = JSON.parse(data);
+				ctx.moveTo(rox * 1001, roy * 1001);
+				ctx.lineTo(rx * 1001, ry * 1001);
+				ctx.stroke();
+				ctx.moveTo(oldvx * 1001, oldvy * 1001);
+				peers.forEach(peer => {
+					if(peer !== c) {
+						peer.send(data);
+					}
+				});
+			});
+			conn.on('close', function () {
+				logger('Connection reset<br>Awaiting connection...')
+				peers = peers.filter(peer => peer !== c);
+			});
+		});
+		peer.on('disconnected', function () {
+			logger('Connection lost. Please reconnect')
+
+            // Workaround for peer.reconnect deleting previous id
+            // peer.id = lastPeerId;
+            // peer._lastServerId = lastPeerId;
+            // peer.reconnect();
+        });
+		peer.on('close', function() {
+			logger('Connection destroyed')
+		});
+		peer.on('error', function (err) {
+			logger('' + err)
+		});
+	}
+</script>
+</html>

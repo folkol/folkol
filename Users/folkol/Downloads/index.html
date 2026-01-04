@@ -1,0 +1,213 @@
+<html>
+  <head>
+    <title>Minetrap</title>
+    <style>
+      .cell {
+      display: inline-block;
+      position: relative;
+      margin: 0px;
+      width: 30px;
+      height: 30px;
+      }
+
+      .entity {
+      font-size: 30px;
+      display: table-cell;
+      position: absolute;
+      left: 0px;
+      width: 30px;
+      height: 30px;
+      text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game" tabindex="1" v-on:keydown.left="move_left" v-on:keydown.right="move_right" v-on:keydown.up="move_up" v-on:keydown.down="move_down" style="width: 1230px; height: 1230px" v-focus>
+      <div v-for="row in field">
+        <template v-for="cell in row">
+          <div class="cell" v-bind:style="'background-color: '+(cell.fog ? 'rgb(158, 105, 60)' : 'rgb(132, 64, 25)')">
+            <template v-if="!cell.fog">
+              <span v-if="pos.x==cell.x && pos.y==cell.y" class="entity">¤</span>
+              <span v-if="cell.mine" class="entity">*</span>
+              <span v-else-if="cell.heat > 0" class="entity" v-bind:style="'color: '+heat_color(cell.heat)">{{ cell.heat }}</span>
+            </template>
+
+            <svg v-if="(cell.x == pos.x-1 && cell.y == pos.y) || (cell.x == pos.x+1 && cell.y == pos.y) || (cell.x == pos.x && cell.y == pos.y-1) || (cell.x == pos.x && cell.y == pos.y+1)"
+                 v-on:click="move(cell.x - pos.x, cell.y - pos.y)" width="30" height="30" style="position:absolute; left: 0px">
+              <rect width="30" height="30" style="stroke: red; fill:none;stroke-width:3"/>
+            </svg>
+          </div>
+        </template>
+        <br/>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script>
+function reveal(pos) {
+    var visited = Array.apply(null, Array(game.height)).map(function(){
+        return Array.apply(null, Array(game.width)).map(function(){ return false; })
+    });
+
+    var open = [pos];
+    while(open.length) {
+        pos = open.pop()
+        visited[pos.y][pos.x] = true;
+        if(!game.field[pos.y][pos.x].fog) {
+            continue;
+        }
+        game.field[pos.y][pos.x].fog = false;
+        if(game.field[pos.y][pos.x].heat) {
+            continue;
+        }
+
+        for(var yn = Math.max(pos.y-1, 0); yn <= Math.min(pos.y+1, game.height - 1); ++yn) {
+            for(var xn = Math.max(pos.x-1, 0); xn <= Math.min(pos.x+1, game.width - 1); ++xn) {
+                if(pos.x == xn && pos.y == yn || visited[yn][xn]) {
+                    continue;
+                }
+                open.push({x: xn, y: yn});
+            }
+        }
+    }
+}
+
+function move(xofs, yofs) {
+    if(!game.active) {
+        return;
+    }
+
+    new_pos = {
+        x: game.pos.x + xofs,
+        y: game.pos.y + yofs,
+    };
+
+    if(new_pos.x < 0 || new_pos.y < 0 || new_pos.x >= game.width || new_pos.y >= game.height) {
+        game.win = true;
+        game.active = false;
+        game.$forceUpdate();
+        alert('You made it out of the mine field.');
+        return;
+    }
+
+    if(game.field[new_pos.y][new_pos.x].mine) {
+        for(var y = 0; y < game.height; ++y) {
+            for(var x = 0; x < game.width; ++x) {
+                if(game.field[y][x].mine) {
+                    game.field[y][x].fog = false;
+                }
+            }
+        }
+        game.active = false;
+        game.alive = false;
+        game.$forceUpdate();
+        alert('You stepped on a landmine.')
+        return;
+    }
+    else if(game.field[new_pos.y][new_pos.x].fog) {
+        reveal(new_pos)
+    }
+
+    game.pos = new_pos;
+}
+
+
+function generate() {
+    game.field = Array.apply(null, Array(game.height)).map(function(){
+        return Array.apply(null, Array(game.width)).map(function(){ return 1; })
+    });
+    for(var y = 0; y < game.height; ++y) {
+        for(var x = 0; x < game.width; ++x) {
+            game.field[y][x] = {
+                mine: false,
+                fog: true,
+                x: x,
+                y: y,
+                heat: 0,
+            };
+        }
+    }
+
+    var count = game.mines;
+
+    while(count) {
+        x = Math.floor(Math.random() * game.width);
+        y = Math.floor(Math.random() * game.height);
+        //if(game.field[y][x].mine || (x == game.pos.x && y == game.pos.y)) {
+        if(game.field[y][x].mine || (Math.abs(x-game.pos.x)+Math.abs(y-game.pos.y) < 2)) {
+            continue;
+        }
+        game.field[y][x].mine = true;
+        --count;
+    }
+
+    for(y = 0; y < game.height; ++y) {
+        for(x = 0; x < game.width; ++x) {
+            var heat = 0;
+            for(var yn = Math.max(y-1, 0); yn <= Math.min(y+1, game.height - 1); ++yn) {
+                for(var xn = Math.max(x-1, 0); xn <= Math.min(x+1, game.width - 1); ++xn) {
+                    if(x == xn && y == yn) {
+                        continue;
+                    }
+                    if(game.field[yn][xn].mine) {
+                        ++heat;
+                    }
+                }
+            }
+            game.field[y][x].heat = heat;
+        }
+    }
+
+    reveal(game.pos);
+    reveal({x: game.pos.x - 1, y: game.pos.y});
+    reveal({x: game.pos.x + 1, y: game.pos.y});
+    reveal({x: game.pos.x, y: game.pos.y - 1});
+    reveal({x: game.pos.x, y: game.pos.y + 1});
+}
+
+
+var game = new Vue({
+    el: '#game',
+    data: {
+        active: true,
+        alive: true,
+        win: false,
+        pos: {x: 20, y: 20},
+        width: 41,
+        height: 41,
+        mines: 40*40 / 5,
+        field: [
+            //[{mine: bool, fog: bool, heat: count, x: 0, y: 0}, ...],
+        ],
+    },
+    methods: {
+        move:  move,
+        move_left:  function(event) { event.preventDefault(); move(-1,  0); },
+        move_right: function(event) { event.preventDefault(); move( 1,  0); },
+        move_up:    function(event) { event.preventDefault(); move( 0, -1); },
+        move_down:  function(event) { event.preventDefault(); move( 0,  1); },
+        heat_color: function(heat) {
+            var colors = [
+                'rgb(130,175,21)',
+                'rgb(200,162,24)',
+                'rgb(255,1,1)',
+                'rgb(133,0,255)',
+                'rgb(0,43,255)',
+                'rgb(133,0,255)',
+                'rgb(255,0,235)',
+                'rgb(255,0,235)',
+            ];
+            return colors[heat-1];
+        },
+    },
+    directives: {
+        focus: {
+            inserted: function (el) {
+                el.focus();
+            },
+        },
+    },
+});
+
+generate();</script>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+# How Query Engines work (https://howqueryengineswork.com)
+
+## Introduction
+
+Arrow -- in-memory data format + IPC protocol
+DataFusion -- query engine
+Ballista -- distributed compute project
+
+> "The query engine covered in this book was originally intended to be part of the Ballista project (and was for a while) but as the project evolved, it became apparent that it would make more sense to keep the query engine in Rust and support Java, and other languages, through a UDF mechanism rather than duplicating large amounts of query execution logic in multiple languages."
+

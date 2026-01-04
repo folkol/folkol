@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Hover states</title>
+    <link href="https://fonts.cdnfonts.com/css/proxima-nova-2" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f8f8;
+            font-family: "Proxima Nova", sans-serif;
+        }
+
+        h1 {
+            margin-top: 75px;
+        }
+
+        header {
+            display: flex;
+            justify-content: center;
+            background-color: #00005F;
+            color: white;
+            flex-direction: row;
+            font-size: 13px;
+            line-height: 17px;
+            vertical-align: middle;
+        }
+
+        header .nav {
+            width: 1000px;
+            display: flex;
+        }
+
+        header .menu-item {
+            padding: 10px;
+        }
+
+        header .menu-item:hover {
+            background-color: #f8f8f8;
+            color: black;
+        }
+
+        /* per-header hover-states */
+        header#original .menu-item:hover {
+            font-weight: 700;
+        }
+
+        header#osynlig .menu-item::before {
+            font-weight: 700;
+            content: attr(title);
+            display: block;
+            height: 0;
+            overflow: hidden;
+            visibility: hidden;
+        }
+
+        header#osynlig .menu-item:hover {
+            font-weight: 700;
+        }
+
+        header#textshadow .menu-item:hover {
+            text-shadow: 0 1px 0 black;
+        }
+
+        header#strokewidth .menu-item:hover {
+            -webkit-text-stroke-width: medium;
+        }
+
+        header#underline .menu-item:hover {
+            text-decoration: underline;
+        }
+
+        header#nobold .menu-item:hover {
+            background-color: #f8f8f8;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Original:</h1>
+<header id="original">
+    <div class="nav">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+             viewBox="0 0 20 20"
+             style="fill:none;stroke:#fff;stroke-linecap:round;stroke-width:2; height: 100%; margin-right: 100px;">
+            <g class="accent">
+                <line x1="1" y1="5" x2="19" y2="5"></line>
+                <line x1="1" y1="10" x2="19" y2="10"></line>
+                <line x1="1" y1="15" x2="19" y2="15"></line>
+            </g>
+        </svg>
+        <span class="menu-item" title="BUSINESS">BUSINESS</span>
+        <span class="menu-item" title="MARKETS">MARKETS</span>
+        <span class="menu-item" title="ECONOMY">ECONOMY</span>
+        <span class="menu-item" title="WEALTH">WEALTH</span>
+        <span class="menu-item" title="WORLD">WORLD</span>
+        <span class="menu-item" title="PRESS RELEASE">PRESS RELEASE</span>
+        <span class="menu-item" title="PROJECTS">PROJECTS</span>
+        <span class="menu-item" title="MULTIMEDIA">MULTIMEDIA</span>
+    </div>
+</header>
+
+<h1>Osynlig bold version:</h1>
+<header id="osynlig">
+    <div class="nav">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+             viewBox="0 0 20 20"
+             style="fill:none;stroke:#fff;stroke-linecap:round;stroke-width:2; height: 100%; margin-right: 100px;">
+            <g class="accent">
+                <line x1="1" y1="5" x2="19" y2="5"></line>
+                <line x1="1" y1="10" x2="19" y2="10"></line>
+                <line x1="1" y1="15" x2="19" y2="15"></line>
+            </g>
+        </svg>
+        <span class="menu-item" title="BUSINESS">BUSINESS</span>
+        <span class="menu-item" title="MARKETS">MARKETS</span>
+        <span class="menu-item" title="ECONOMY">ECONOMY</span>
+        <span class="menu-item" title="WEALTH">WEALTH</span>
+        <span class="menu-item" title="WORLD">WORLD</span>
+        <span class="menu-item" title="PRESS RELEASE">PRESS RELEASE</span>
+        <span class="menu-item" title="PROJECTS">PROJECTS</span>
+        <span class="menu-item" title="MULTIMEDIA">MULTIMEDIA</span>
+    </div>
+</header>
+
+<h1>Fejk-bold med shadow:</h1>
+<header id="textshadow">
+    <div class="nav">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+             viewBox="0 0 20 20"
+             style="fill:none;stroke:#fff;stroke-linecap:round;stroke-width:2; height: 100%; margin-right: 100px;">
+            <g class="accent">
+                <line x1="1" y1="5" x2="19" y2="5"></line>
+                <line x1="1" y1="10" x2="19" y2="10"></line>
+                <line x1="1" y1="15" x2="19" y2="15"></line>
+            </g>
+        </svg>
+        <span class="menu-item" title="BUSINESS">BUSINESS</span>
+        <span class="menu-item" title="MARKETS">MARKETS</span>
+        <span class="menu-item" title="ECONOMY">ECONOMY</span>
+        <span class="menu-item" title="WEALTH">WEALTH</span>
+        <span class="menu-item" title="WORLD">WORLD</span>
+        <span class="menu-item" title="PRESS RELEASE">PRESS RELEASE</span>
+        <span class="menu-item" title="PROJECTS">PROJECTS</span>
+        <span class="menu-item" title="MULTIMEDIA">MULTIMEDIA</span>
+    </div>
+</header>
+
+<h1>Fejk-bold med stroke width:</h1>
+<header id="strokewidth">
+    <div class="nav">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+             viewBox="0 0 20 20"
+             style="fill:none;stroke:#fff;stroke-linecap:round;stroke-width:2; height: 100%; margin-right: 100px;">
+            <g class="accent">
+                <line x1="1" y1="5" x2="19" y2="5"></line>
+                <line x1="1" y1="10" x2="19" y2="10"></line>
+                <line x1="1" y1="15" x2="19" y2="15"></line>
+            </g>
+        </svg>
+        <span class="menu-item" title="BUSINESS">BUSINESS</span>
+        <span class="menu-item" title="MARKETS">MARKETS</span>
+        <span class="menu-item" title="ECONOMY">ECONOMY</span>
+        <span class="menu-item" title="WEALTH">WEALTH</span>
+        <span class="menu-item" title="WORLD">WORLD</span>
+        <span class="menu-item" title="PRESS RELEASE">PRESS RELEASE</span>
+        <span class="menu-item" title="PROJECTS">PROJECTS</span>
+        <span class="menu-item" title="MULTIMEDIA">MULTIMEDIA</span>
+    </div>
+</header>
+
+<h1>Underline:</h1>
+<header id="underline">
+    <div class="nav">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+             viewBox="0 0 20 20"
+             style="fill:none;stroke:#fff;stroke-linecap:round;stroke-width:2; height: 100%; margin-right: 100px;">
+            <g class="accent">
+                <line x1="1" y1="5" x2="19" y2="5"></line>
+                <line x1="1" y1="10" x2="19" y2="10"></line>
+                <line x1="1" y1="15" x2="19" y2="15"></line>
+            </g>
+        </svg>
+        <span class="menu-item" title="BUSINESS">BUSINESS</span>
+        <span class="menu-item" title="MARKETS">MARKETS</span>
+        <span class="menu-item" title="ECONOMY">ECONOMY</span>
+        <span class="menu-item" title="WEALTH">WEALTH</span>
+        <span class="menu-item" title="WORLD">WORLD</span>
+        <span class="menu-item" title="PRESS RELEASE">PRESS RELEASE</span>
+        <span class="menu-item" title="PROJECTS">PROJECTS</span>
+        <span class="menu-item" title="MULTIMEDIA">MULTIMEDIA</span>
+    </div>
+</header>
+
+<h1>Ej bold:</h1>
+<header id="nobold">
+    <div class="nav">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+             viewBox="0 0 20 20"
+             style="fill:none;stroke:#fff;stroke-linecap:round;stroke-width:2; height: 100%; margin-right: 100px;">
+            <g class="accent">
+                <line x1="1" y1="5" x2="19" y2="5"></line>
+                <line x1="1" y1="10" x2="19" y2="10"></line>
+                <line x1="1" y1="15" x2="19" y2="15"></line>
+            </g>
+        </svg>
+        <span class="menu-item" title="BUSINESS">BUSINESS</span>
+        <span class="menu-item" title="MARKETS">MARKETS</span>
+        <span class="menu-item" title="ECONOMY">ECONOMY</span>
+        <span class="menu-item" title="WEALTH">WEALTH</span>
+        <span class="menu-item" title="WORLD">WORLD</span>
+        <span class="menu-item" title="PRESS RELEASE">PRESS RELEASE</span>
+        <span class="menu-item" title="PROJECTS">PROJECTS</span>
+        <span class="menu-item" title="MULTIMEDIA">MULTIMEDIA</span>
+    </div>
+</header>
+
+</body>
+</html>
